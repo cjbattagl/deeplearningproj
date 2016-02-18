@@ -1,9 +1,9 @@
-\subsection{Motivation}
+\subsection*{Motivation}
 %What problem are you trying to solve? Why is this hard right now?
 Deep convolutional neural networks are currently the leading technique for image classification. However, video classification is a less mature field. Training and testing neural networks on a video source requires greater computational resources and more elaborate neural architectures. Furthermore, there are far fewer publicly available data sets to train on. 
 
 The proposed contribution of our project is to apply a \TODO{3D-CNN that incorporates LSTM \dots}
-\subsection{Related Work}
+\subsection*{Related Work}
 %What has been done in similar fields/problems? What are the limitations of current approaches?
 
 %Recurrent long-term convolutional models are most frequently used in speech and language applications, but it is possible to apply them to visual time-series data. 
@@ -12,7 +12,9 @@ Long-term recurrent convolutional networks have been applied to an even harder p
 Large-scale video classification:~\cite{cnnvid}
 
 Learning Spatio-temporal features:~\cite{stf}
-\subsection{Approach and Techniques}
+
+Beyond short snippets:~\cite{snip}
+\subsection*{Approach and Techniques}
 %What is your proposed approach to solving the problem? How does it compare to existing approaches?
 %Note: It's OK for these projects to be similar to existing approaches, although if you want to publish the results they will have to have some novelty.
 We have decided on two possible approaches, which address the third dimension (time) in different ways: 3D Convolutional Neural Networks (3D-CNNs) and Long Short-Term Memory (LSTM) Recurrent Neural Networks (RNNs). 
@@ -20,14 +22,14 @@ We have decided on two possible approaches, which address the third dimension (t
 Using a 3D CNN it is possible to build a classifier on a moving window of frames. This network performs a 3D convolution kernel along a window of frames, thereby incorporating movement as a signal.
 
 The `Long Short-Term Memory' (LSTM) technique \TODO{\dots}.
-\subsection{Data Set}
+\subsection*{Data Set}
 %What data are you planning to apply your approach to?
 \TODO{Describe the video data set...}
-\subsection{Experimental Methodology}
+\subsection*{Experimental Methodology}
 %What specific experiments are you planning on conducting? How are they testing the specific problem you want to solve?
 \TODO{\dots}
 For training we plan to use the Jinx cluster at Georgia Tech. Each node is equipped with 2 nVidia Tesla M2090 ``Fermi'' GPU cards.
-\subsection{Group Tasking}
+\subsection*{Group Tasking}
 \TODO{\dots}
 %A plan of breaking up the project (who will do what). Note that all team members must make a meaningful/significant contribution (i.e. not just do the reporting/posters).
 

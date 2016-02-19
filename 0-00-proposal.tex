@@ -38,7 +38,7 @@ Furthermore, the current LSTM model is built on the fully-connected
 layer, which does not conserve spatial information. We would like to examine the 
 effectiveness of adding the LSTM network at earlier layers.
 If we apply LSTM directly after the convolution layer,
-the input to LSTM model is actually multi-dimentional tensor. To address
+the input to LSTM model is actually multi-dimensional tensor. To address
 this challenge, we would like to apply the multi-dimensional LSTM
 \cite{byeon2015scene} to efficiently take advantage of the spatial
 information following an early convolution layer. 

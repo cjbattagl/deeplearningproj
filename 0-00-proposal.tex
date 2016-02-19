@@ -1,13 +1,22 @@
 \subsection*{Motivation}
 %What problem are you trying to solve? Why is this hard right now?
-Deep convolutional neural networks are currently the leading technique for image classification. However, video classification is a less mature field. Training and testing neural networks on a video source requires greater computational resources and more elaborate neural architectures. Furthermore, there are far fewer publicly available data sets to train on. 
+Deep convolutional neural networks are a leading technique for image classification.
+However, \emph{video} classification is less developed.
+While it is certainly possible to simply run a neural network on each individual frame of a video, this sacrifices a wealth of temporal attributes such as movement, gestures, gait, etc.
+There are indeed methods of preprocessing temporal information into a single 2-dimensional input~\cite{brox}, but a more attractive research goal is to develop a neural network that can discover temporal relationships on its own.
+There are multiple recent approaches towards this goal, but as of yet no consensus on which is superior.
 
-The proposed contribution of our project is to apply a \TODO{3D-CNN that incorporates LSTM \dots}
+The difficulties in training neural networks on video input include the following: memory requirements (particularly if 3D convolutions are used), fewer public data sets, size of the data sets (for instance, the Sports-1M data set is $\bigO(1TB)$ large), and lack of consensus on which approach is most effective. 
+
+Our goal is to develop a deep neural network that classifies videos.
+We have settled on two main approaches, discussed below: 3-dimensional convolutional neural networks (3D-CNNs) and recurrent neural networks that incorporate long short-term memory (LSTM).  
+
 \subsection*{Related Work}
 %What has been done in similar fields/problems? What are the limitations of current approaches?
 
 %Recurrent long-term convolutional models are most frequently used in speech and language applications, but it is possible to apply them to visual time-series data. 
-Long-term recurrent convolutional networks have been applied to an even harder problem: that of not only classifying video content, but generating a sentence that describes the scene~\cite{ltrcn}.
+One popular approach is to apply a 2D-CNN to each frame of the video, followed by an RNN with LSTM~\cite{ltrcn}. 
+
 
 Large-scale video classification:~\cite{cnnvid}
 
@@ -17,11 +26,34 @@ Beyond short snippets:~\cite{snip}
 \subsection*{Approach and Techniques}
 %What is your proposed approach to solving the problem? How does it compare to existing approaches?
 %Note: It's OK for these projects to be similar to existing approaches, although if you want to publish the results they will have to have some novelty.
-We have decided on two possible approaches, which address the third dimension (time) in different ways: 3D Convolutional Neural Networks (3D-CNNs) and Long Short-Term Memory (LSTM) Recurrent Neural Networks (RNNs). 
 
-Using a 3D CNN it is possible to build a classifier on a moving window of frames. This network performs a 3D convolution kernel along a window of frames, thereby incorporating movement as a signal.
+We have decided on combining two possible approaches, which address
+the third dimension (time) in different ways: 3D Convolutional Neural
+Networks (3D-CNNs) \cite{stf,cnnvid} and Multi-Dimensional Long
+Short-Term Memory (LSTM) Recurrent Neural Networks (RNNs) \cite{ltrcn}. 
 
-The `Long Short-Term Memory' (LSTM) technique \TODO{\dots}.
+% 3D-CNNs
+Using a 3D-CNNs, it is possible to build a classifier on a moving window
+of frames, which extract useful local movement information shared
+in a few frame. We would like to use the slow fusion model \cite{cnnvid}
+due to the GPU memory constrain. On the other hand, LSTM/ RNNs is
+able to build the classifier with long term memory
+using much larger number of the frames in the video. 
+Combining both 3D-CNNs and LSTM is able to combine the
+local movement information with long-term memory,
+which can further increase the classification accuracy.
+
+% LSTM
+Furthermore, the current LSTM model is built on the fully-connected
+layer, which no spatial information is preserved. We would like to
+try to plug-in the LSTM at earlier layers to test its performance.
+Especially, if applying LSTM directly after the convolution layer,
+the input to LSTM model is actually multi-dimentional tensor. To address
+this challenge, we would like to apply the multi-dimensional LSTM
+\cite{byeon2015scene} to efficiently take advantage of the spatial
+information after the convolution layer. 
+
+
 \subsection*{Data Set}
 %What data are you planning to apply your approach to?
 \TODO{Describe the video data set...}

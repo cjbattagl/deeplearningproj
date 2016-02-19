@@ -27,9 +27,24 @@ The `Long Short-Term Memory' (LSTM) technique \TODO{\dots}.
 \TODO{Describe the video data set...}
 \subsection*{Experimental Methodology}
 %What specific experiments are you planning on conducting? How are they testing the specific problem you want to solve?
-\TODO{\dots}
-For training we plan to use the Jinx cluster at Georgia Tech. Each node is equipped with 2 nVidia Tesla M2090 ``Fermi'' GPU cards.
+For training we plan to use the Jinx cluster at Georgia Tech. Each node is equipped with 2 nVidia Tesla M2090 ``Fermi'' GPU cards, and CPU nodes with large memory are available.
+\begin{itemize}
+\item Move 2D-LSTM into CNN
+\item Replace 2D-CNN $\to$ 2D-CNN with slow fusion
+\item Replace 2D-CNN $\to$ Shallow ResNet
+\item Replace 2D-CNN $\to$ Shallow ResNet with slow fusion
+\item 2D-CNN incorporated with Optical Flow \emph{and} slow fusion
+\end{itemize}
 \subsection*{Group Tasking}
-\TODO{\dots}
 %A plan of breaking up the project (who will do what). Note that all team members must make a meaningful/significant contribution (i.e. not just do the reporting/posters).
-
+\begin{itemize}
+\item Proposal writing - Steve, Hao, Casey
+\item Proposal presentation - Yao
+\item Read and understand papers on 2D-LSTM - Everyone
+\item Read and understand ResNet papers - Everyone
+%\item Read and understand caffe code that implements 2D-CNN and LSTM.
+\item Implement LSTM: Yao, Casey
+\item Implement CNN: Steve, Hao
+\item Preparation of UCF data (incl. optical flow) - Casey
+\item Preparation of Sports-101 data - (? \dots tentative)
+\end{itemize}

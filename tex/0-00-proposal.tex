@@ -6,7 +6,7 @@ While it is certainly possible to simply run a neural network on each individual
 There are indeed methods of preprocessing temporal information into a single 2-dimensional input~\cite{brox}, but a more attractive research goal is to develop a neural network that can discover temporal relationships on its own.
 There are multiple recent approaches towards this goal, but as of yet no consensus on which is superior.
 
-The difficulties in training neural networks on video input include the following: memory requirements (particularly if 3D convolutions are used), fewer public data sets, size of the data sets (for instance, the Sports-1M data set is $\bigO(1TB)$ large), and lack of consensus on which approach is most effective. 
+The difficulties in training neural networks on video input include the following: memory requirements (particularly if 3D convolutions are used), fewer public data sets, size of the data sets (for instance, the Sports-1M data set is $\approx 4TB$ large), and lack of consensus on which approach is most effective. 
 
 Our goal is to develop a deep neural network that classifies videos.
 We have settled on two main approaches, discussed below: 3-dimensional convolutional neural networks (3D-CNNs) and recurrent neural networks that incorporate long short-term memory (LSTM).  
@@ -16,67 +16,57 @@ We have settled on two main approaches, discussed below: 3-dimensional convoluti
 
 %Recurrent long-term convolutional models are most frequently used in speech and language applications, but it is possible to apply them to visual time-series data. 
 One popular approach is to apply a 2D-CNN to each frame of the video, followed by an RNN with LSTM~\cite{ltrcn}. 
+Another approach is slow-fusion, which applies multiple frames to the input at the same time~\cite{cnnvid}. This approach, applied to a simply CNN, shows only a modest improvement over CNN single-frame learning.
+Tran, et al. demonstrated that using 3D-CNNs instead of 2D can achieve state-of-the-art results on several data sets~\cite{stf}.
+Ng, et al. demonstrate that instead of training on `short snippets' (such as in~\cite{cnnvid,stf}), an LSTM approach allows us to train on entire videos efficiently~\cite{snip}, and achieves state-of-the-art performance on several data sets.
 
-
-Large-scale video classification:~\cite{cnnvid}
-
-Learning Spatio-temporal features:~\cite{stf}
-
-Beyond short snippets:~\cite{snip}
+Many of these papers incorporate additional features such as optical flow~\cite{brox} and improved dense trajectory, both of which involve optimization techniques applied to subsets of frames. 
 \subsection*{Approach and Techniques}
 %What is your proposed approach to solving the problem? How does it compare to existing approaches?
 %Note: It's OK for these projects to be similar to existing approaches, although if you want to publish the results they will have to have some novelty.
-
 We have decided on combining two possible approaches, which address
-the third dimension (time) in different ways: 3D Convolutional Neural
-Networks (3D-CNNs) \cite{stf,cnnvid} and Multi-Dimensional Long
-Short-Term Memory (LSTM) Recurrent Neural Networks (RNNs) \cite{ltrcn}. 
+the third, temporal dimension in different ways: 3D Convolutional Neural
+Networks (3D-CNNs)~\cite{stf,cnnvid} and Multi-Dimensional Long
+Short-Term Memory (LSTM)/Recurrent Neural Networks (RNNs)~\cite{ltrcn}. 
 
 % 3D-CNNs
-Using a 3D-CNNs, it is possible to build a classifier on a moving window
-of frames, which extract useful local movement information shared
-in a few frame. We would like to use the slow fusion model \cite{cnnvid}
-due to the GPU memory constrain. On the other hand, LSTM/ RNNs is
-able to build the classifier with long term memory
-using much larger number of the frames in the video. 
-Combining both 3D-CNNs and LSTM is able to combine the
-local movement information with long-term memory,
-which can further increase the classification accuracy.
-
+Using a 3D-CNN, it is possible to build a classifier on a moving window
+of frames using 3D convolutions to extract useful local movement information. However, 3D-CNNs introduce a massive memory blowup that may make training infeasible on GPUs.
+To address this, we would like to use the slow-fusion model~\cite{cnnvid} instead of 3D kernels. In addition, we also plan to apply 3D kernels to one or two layers to check the improvement if we don't meet the memory problem. On the other hand, an LSTM/RNN approach is able to build the classifier with long term memory using a much larger number of frames at once. Combining a slow-fusion CNN with LSTM would combine the local movement information with long-term memory, with possible gains in learning.
 % LSTM
 Furthermore, the current LSTM model is built on the fully-connected
-layer, which no spatial information is preserved. We would like to
-try to plug-in the LSTM at earlier layers to test its performance.
-Especially, if applying LSTM directly after the convolution layer,
-the input to LSTM model is actually multi-dimentional tensor. To address
+layer, which does not conserve spatial information. We would like to examine the 
+effectiveness of adding the LSTM network at earlier layers.
+If we apply LSTM directly after the convolution layer,
+the input to LSTM model is actually multi-dimensional tensor. To address
 this challenge, we would like to apply the multi-dimensional LSTM
 \cite{byeon2015scene} to efficiently take advantage of the spatial
-information after the convolution layer. 
-
+information following an early convolution layer. 
 
 \subsection*{Data Set}
-%What data are you planning to apply your approach to?
-\TODO{Describe the video data set...}
+We propose to begin with a well-established data set such as UCF-101~\cite{ucf101}, which contains 13320 videos from 101 action categories. For early training purposes we may use only a small subset of these actions, such as a subset of 10 sports. The ultimate goal is applying our framework to Sports-1M~\cite{cnnvid}, which contains around 1 million Youtube videos belonging to 487 categories. In this way, we can compare our methods with the current state-of-the-art methods.
+
 \subsection*{Experimental Methodology}
 %What specific experiments are you planning on conducting? How are they testing the specific problem you want to solve?
 For training we plan to use the Jinx cluster at Georgia Tech. Each node is equipped with 2 nVidia Tesla M2090 ``Fermi'' GPU cards, and CPU nodes with large memory are available.
+
+The following is a set of experiments that we may perform, given enough time:
 \begin{itemize}
-\item Move 2D-LSTM into CNN
-\item Replace 2D-CNN $\to$ 2D-CNN with slow fusion
-\item Replace 2D-CNN $\to$ Shallow ResNet
-\item Replace 2D-CNN $\to$ Shallow ResNet with slow fusion
-\item 2D-CNN incorporated with Optical Flow \emph{and} slow fusion
+\item Move 2D-LSTM within convolution layers to see if this better incorporates spatial information.
+\item Incorporate slow fusion within a 2D-CNN to see if this input approach yields higher accuracy.
+\item Replace a 2D-CNN-LSTM network with a Shallow ResNet-LSTM network (with or without slow fusion)-- to see if ResNet provides significant gains over the AlexNet used by existing studies.
+\item Study if slow-fusion \emph{combined} with optical-flow input provides significantly better results than either approach on its own.
 \end{itemize}
+We may experiment with different strategies in normalization and augmentation, given enough time.
 \subsection*{Group Tasking}
 %A plan of breaking up the project (who will do what). Note that all team members must make a meaningful/significant contribution (i.e. not just do the reporting/posters).
+The following is a tentative list of tasks. As we move closer to our experiments the list will undoubtedly grow. 
 \begin{itemize}
 \item Proposal writing - Steve, Hao, Casey
 \item Proposal presentation - Yao
 \item Read and understand papers on 2D-LSTM - Everyone
-\item Read and understand ResNet papers - Everyone
 %\item Read and understand caffe code that implements 2D-CNN and LSTM.
 \item Implement LSTM: Yao, Casey
 \item Implement CNN: Steve, Hao
 \item Preparation of UCF data (incl. optical flow) - Casey
-\item Preparation of Sports-101 data - (? \dots tentative)
 \end{itemize}

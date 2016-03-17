@@ -53,7 +53,7 @@ function process()
 
    -- (2) compute affinity graph on input image
    frame_smoothed = image.convolve(frame, gaussian, 'same')
---   graph = imgraph.graph(frame_smoothed)
+   graph = imgraph.graph(frame_smoothed)
 
    -- (3) cut graph using min-spanning tree
    mstsegm = imgraph.segmentmst(graph, 2, 20)

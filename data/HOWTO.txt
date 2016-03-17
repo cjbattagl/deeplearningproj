@@ -6,4 +6,5 @@ sudo apt-get install ffmpeg
 luarocks install ffmpeg
 luarocks install camera
 luarocks install imgraph
+qlua run.lua -v 'test.mpg'
 ffmpeg -i v_shooting_01_01.mpg -r 1/1 $filename%03d.bmp

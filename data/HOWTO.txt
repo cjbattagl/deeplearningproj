@@ -1,10 +1,23 @@
+-- download data:
 wget http://crcv.ucf.edu/data/UCF11_updated_mpg.rar
+
+-- if you dont have unrar, download (or use sudo apt-get):
 wget http://www.rarlab.com/rar/rarlinux-3.6.0.tar.gz
 tar -zxvf rarlinux-*.tar.gz
+
+-- unRAR the data:
 ./rar/unrar x UCF11_updated_mpg.rar
+
+-- get ffmpeg library:
 sudo apt-get install ffmpeg
+
+-- get video libraries for lua:
 luarocks install ffmpeg
 luarocks install camera
 luarocks install imgraph
+
+-- input video to lua:
 qlua run.lua -v 'test.mpg'
+
+-- if you want to extract individual frames outside of lua (example):
 ffmpeg -i v_shooting_01_01.mpg -r 1/1 $filename%03d.bmp

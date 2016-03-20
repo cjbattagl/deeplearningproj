@@ -21,3 +21,10 @@ qlua run.lua -v 'test.mpg'
 
 -- if you want to extract individual frames outside of lua (example):
 ffmpeg -i v_shooting_01_01.mpg -r 1/1 $filename%03d.bmp
+
+
+-- ffmpeg installation problems for Ubuntu 14.04
+sudo add-apt-repository ppa:mc3man/trusty-media
+sudo apt-get update
+sudo apt-get dist-upgrade
+sudo apt-get install ffmpeg

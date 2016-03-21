@@ -43,10 +43,10 @@ cmd:option('--silent', false, 'don\'t print anything to stdout')
 cmd:option('--uniform', 0.1, 'initialize parameters using uniform distribution between -uniform and uniform. -1 means default initialization')
 
 -- recurrent layer 
-cmd:option('--lstm', true, 'use Long Short Term Memory (nn.LSTM instead of nn.Recurrent)')
+cmd:option('--lstm', false, 'use Long Short Term Memory (nn.LSTM instead of nn.Recurrent)')
 cmd:option('--gru', false, 'use Gated Recurrent Units (nn.GRU instead of nn.Recurrent)')
-cmd:option('--rho', 10, 'back-propagate through time (BPTT) for opt.rho time-steps')
-cmd:option('--hiddenSize', '{100}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
+cmd:option('--rho', 5, 'back-propagate through time (BPTT) for opt.rho time-steps')
+cmd:option('--hiddenSize', '{800, 200}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
 cmd:option('--zeroFirst', false, 'first step will forward zero through recurrence (i.e. add bias of recurrence). As opposed to learning bias specifically for first step.')
 cmd:option('--dropout', false, 'apply dropout after each recurrent layer')
 cmd:option('--dropoutProb', 0.5, 'probability of zeroing a neuron (dropout probability)')
@@ -77,38 +77,23 @@ end
 -- TODO, change this, but I am not sure what number should we use
 nIndex = 100 -- input words
 
-nClass = 11 -- UCF11 has 11 categories
+nClass = 100 -- UCF11 has 11 categories
 
 ds = {}
--- TODO: ds.size should correspondes to the number of samples in the training set
+-- TODO: ds.size should correspondes to the number of samples(frames) 
 ds.size = 1000
+-- ds.size = 8
 
+-- ds.FeatureDims = 4096 -- initial the dimension of feature vector
 ds.FeatureDims = 4096 -- initial the dimension of feature vector
 
--- input dimension = ds.size x ds.FeatureDims = 1000 x 4096
-ds.input = torch.LongTensor(ds.size, ds.FeatureDims, opt.rho)
--- ds.input = torch.LongTensor(ds.size, opt.rho)
+-- input dimension = ds.size x ds.FeatureDims x opt.rho = 1000 x 4096
+-- ds.input = torch.LongTensor(ds.size, ds.FeatureDims, opt.rho)
+ds.input = torch.randn(ds.size, ds.FeatureDims, opt.rho)
+
 
 -- target dimension = ds.size x 1 = 1000 x 1
-ds.target = torch.LongTensor(ds.size):random(nClass)
-
-
-
--- this will make the inputs somewhat correlate with the targets,
--- such that the reduction in training error should be more obvious
-
-
--- local correlate = torch.LongTensor(nClass, opt.rho*3):random(nClass)
--- local indices = torch.LongTensor(opt.rho)
--- local buffer = torch.LongTensor()
--- local sortVal, sortIdx = torch.LongTensor(), torch.LongTensor()
--- for i=1,ds.size do
---    indices:random(1,opt.rho*3)
---    buffer:index(correlate[ds.target[i]], 1, indices)
---    sortVal:sort(sortIdx, buffer, 1)
---    ds.input[i]:copy(sortVal:view(-1)) 
--- end
-
+ds.target = torch.DoubleTensor(ds.size):random(nClass)
 
 
 ------------------------------------------------------------
@@ -116,76 +101,111 @@ ds.target = torch.LongTensor(ds.size):random(nClass)
 ------------------------------------------------------------
 
 -- Video Classification model
-vc_rnn = nn.Sequential()
+--  vc_rnn = nn.Sequential()
 
-local inputSize = opt.hiddenSize[1]
-for i,hiddenSize in ipairs(opt.hiddenSize) do 
+if true then
 
-   if i~= 1 and (not opt.lstm) and (not opt.gru) then
-      vc_rnn:add(nn.Sequencer(nn.Linear(inputSize, hiddenSize)))
-   end
-   
-   -- recurrent layer
-   local rnn
-   if opt.gru then
-      -- Gated Recurrent Units
-      rnn = nn.Sequencer(nn.GRU(inputSize, hiddenSize))
-   elseif opt.lstm then
-      -- Long Short Term Memory
-      rnn = nn.Sequencer(nn.FastLSTM(inputSize, hiddenSize))
-   else
-      -- simple recurrent neural network
-      rnn = nn.Recurrent(
-         hiddenSize, -- first step will use nn.Add
-         nn.Identity(), -- for efficiency (see above input layer) 
-         nn.Linear(hiddenSize, hiddenSize), -- feedback layer (recurrence)
-         nn.Sigmoid(), -- transfer function 
-         99999 -- maximum number of time-steps per sequence
-      )
-      if opt.zeroFirst then
-         -- this is equivalent to forwarding a zero vector through the feedback layer
-         rnn.startModule:share(rnn.feedbackModule, 'bias')
-      end
-      rnn = nn.Sequencer(rnn)
-   end
+   -- local inputSize = opt.hiddenSize[1]
+   -- for i,hiddenSize in ipairs(opt.hiddenSize) do 
 
-   vc_rnn:add(rnn)
+   --    if i~= 1 and (not opt.lstm) and (not opt.gru) then
+   --       vc_rnn:add(nn.Sequencer(nn.Linear(inputSize, hiddenSize)))
+   --    end
+      
+   --    -- recurrent layer
+   --    local rnn
+   --    if opt.gru then
+   --       -- Gated Recurrent Units
+   --       rnn = nn.Sequencer(nn.GRU(inputSize, hiddenSize))
+   --    elseif opt.lstm then
+   --       -- Long Short Term Memory
+   --       rnn = nn.Sequencer(nn.FastLSTM(inputSize, hiddenSize))
+   --    else
+   --       -- simple recurrent neural network
+   --       rnn = nn.Recurrent(
+   --          hiddenSize, -- first step will use nn.Add
+   --          nn.Identity(), -- for efficiency (see above input layer) 
+   --          nn.Linear(hiddenSize, hiddenSize), -- feedback layer (recurrence)
+   --          nn.Sigmoid(), -- transfer function 
+   --          --99999 -- maximum number of time-steps per sequence
+   --          opt.rho
+   --       )
+   --       if opt.zeroFirst then
+   --          -- this is equivalent to forwarding a zero vector through the feedback layer
+   --          rnn.startModule:share(rnn.feedbackModule, 'bias')
+   --       end
+
+
+   --        rnn = nn.Sequencer(rnn)
+
+
+   --    end
+      
    
-   if opt.dropout then -- dropout it applied between recurrent layers
-      vc_rnn:add(nn.Sequencer(nn.Dropout(opt.dropoutProb)))
-   end
-   
-   inputSize = hiddenSize
+   --    if opt.dropout then -- dropout it applied between recurrent layers
+   --       vc_rnn:add(nn.Sequencer(nn.Dropout(opt.dropoutProb)))
+   --    end
+      
+   --    inputSize = hiddenSize
+   -- end
+
+
+   rnn = nn.Recurrent(
+   opt.hiddenSize[1], -- size of output
+   nn.Linear(ds.FeatureDims, opt.hiddenSize[1]), -- input layer
+   nn.Linear(opt.hiddenSize[1], opt.hiddenSize[1]), -- recurrent layer
+   nn.Sigmoid(), -- transfer function
+   opt.rho
+   )
+
+   vc_rnn = nn.Sequential()
+   -- vc_rnn:insert(nn.SplitTable(3,1), 1) -- tensor to table of tensors, which can't not be used in 'nn.Sequencer'
+   -- vc_rnn:add(rnn)
+   :add(nn.FastLSTM(ds.FeatureDims, opt.hiddenSize[1]))
+   :add(nn.FastLSTM(opt.hiddenSize[1], opt.hiddenSize[2]))
+   :add(nn.Linear(opt.hiddenSize[2], nIndex))
+   :add(nn.LogSoftMax())
+
+   vc_rnn = nn.Sequencer(vc_rnn)
+
+
 end
 
 -- input layer (i.e. word embedding space)
-vc_rnn:insert(nn.SplitTable(1,2), 1) -- tensor to table of tensors
+-- vc_rnn:insert(nn.SplitTable(1,2), 1) -- tensor to table of tensors
+ -- vc_rnn:insert(nn.SplitTable(3,1), 1) -- tensor to table of tensors
 
 if opt.dropout then
    vc_rnn:insert(nn.Dropout(opt.dropoutProb), 1)
 end
 
+
+
 -- TODO: LookupTable can only take 1D or 2D input 
-lookup = nn.LookupTable(nIndex, opt.hiddenSize[1])
-lookup.maxOutNorm = -1 -- disable maxParamNorm on the lookup table
-vc_rnn:insert(lookup, 1)
+-- lookup = nn.LookupTable(nIndex, opt.hiddenSize[1])
+-- lookup.maxOutNorm = -1 -- disable maxParamNorm on the lookup table
+-- vc_rnn:insert(lookup, 1)
 
 
 -- output layer
-vc_rnn:add(nn.SelectTable(-1)) -- this selects the last time-step of the rnn output sequence
-vc_rnn:add(nn.Linear(inputSize, nIndex))
-vc_rnn:add(nn.LogSoftMax())
 
--- vc_rnn:add(nn.Sequencer(nn.SelectTable(-1))) -- this selects the last time-step of the rnn output sequence
--- vc_rnn:add(nn.Sequencer(nn.Linear(inputSize, nIndex)))
--- vc_rnn:add(nn.Sequencer(nn.LogSoftMax()))
+if false then
 
-if opt.uniform > 0 then
-   for k,param in ipairs(vc_rnn:parameters()) do
-      param:uniform(-opt.uniform, opt.uniform)
+   -- vc_rnn:add(nn.SelectTable(-1)) -- this selects the last time-step of the rnn output sequence
+   vc_rnn:add(nn.Linear(inputSize, nIndex))
+   vc_rnn:add(nn.LogSoftMax())
+
+   -- vc_rnn:add(nn.Sequencer(nn.SelectTable(-1))) -- this selects the last time-step of the rnn output sequence
+   -- vc_rnn:add(nn.Sequencer(nn.Linear(inputSize, nIndex)))
+   -- vc_rnn:add(nn.Sequencer(nn.LogSoftMax()))
+
+   if opt.uniform > 0 then
+      for k,param in ipairs(vc_rnn:parameters()) do
+         param:uniform(-opt.uniform, opt.uniform)
+      end
    end
-end
 
+end
 -- will recurse a single continuous sequence
 vc_rnn:remember((opt.lstm or opt.gru) and 'both' or 'eval')
 
@@ -195,7 +215,9 @@ print(vc_rnn)
 ------------------------------------------------------------
 -- Train
 ------------------------------------------------------------
-local inputs, targets = torch.LongTensor(), torch.LongTensor()
+-- local inputs, targets = torch.LongTensor(), torch.LongTensor()
+local inputs, targets = torch.Tensor(), torch.Tensor()
+-- local inputs, targets = {}, {}
 
 local indices = torch.LongTensor(opt.batchSize)
 -- indices:resize(opt.batchSize) -- indices to be used later, so it is resized to batchsize
@@ -205,32 +227,42 @@ criterion = nn.ClassNLLCriterion()
 
 for iteration = 1, opt.maxEpoch do
    -- 1. create a sequence of opt.rho time-steps
-   --[[
+   ---[[
    indices:random(1,ds.size) -- choose some random samples for training
    inputs:index(ds.input, 1,indices)
    targets:index(ds.target, 1,indices)
-   ]]
+   --]]
 
-   indices:random(1,ds.size) -- choose some random samples for training
-   inputs:index(ds.input, 1,indices) -- inputs = batchsize x FeatureDims x opt.rho
-   targets:index(ds.target, 1,indices) -- targets = batchsize x 1
+   -- Convert tensor to table of tensors
+   mlp = nn.SplitTable(3,1)
+   inputs = mlp:forward(inputs)
+
+   -- for step = 1, opt.rho do
+   --    -- batch of inputs
+   --    inputs[step] = inputs[step] or ds.input.new()
+   --    -- inputs[step]:index(ds.input:select(3,step), 1, indices)
+   --    inputs[step] = (ds.input:select(3,step))
+   -- end
 
    -- 2. forward sequence through vc_rnn
    
    vc_rnn:zeroGradParameters() 
-   
-   -- print(inputs)
+
+
+
+
    local outputs = vc_rnn:forward(inputs)
 
-   print(inputs)
-   ---[[
+print(outputs)
+---[[
 local answer
 repeat
-   io.write("continue with this operation (y/n)? ")
-   io.flush()
-   answer=io.read()
+io.write("continue with this operation (y/n)? ")
+io.flush()
+answer=io.read()
 until answer=="y" or answer=="n"
 --]]
+
 
    local err = criterion:forward(outputs, targets)
    

@@ -43,10 +43,10 @@ cmd:option('--silent', false, 'don\'t print anything to stdout')
 cmd:option('--uniform', 0.1, 'initialize parameters using uniform distribution between -uniform and uniform. -1 means default initialization')
 
 -- recurrent layer 
-cmd:option('--lstm', false, 'use Long Short Term Memory (nn.LSTM instead of nn.Recurrent)')
+cmd:option('--lstm', true, 'use Long Short Term Memory (nn.LSTM instead of nn.Recurrent)')
 cmd:option('--gru', false, 'use Gated Recurrent Units (nn.GRU instead of nn.Recurrent)')
 cmd:option('--rho', 5, 'back-propagate through time (BPTT) for opt.rho time-steps')
-cmd:option('--hiddenSize', '{800, 200}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
+cmd:option('--hiddenSize', '{4096, 800, 200}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
 cmd:option('--zeroFirst', false, 'first step will forward zero through recurrence (i.e. add bias of recurrence). As opposed to learning bias specifically for first step.')
 cmd:option('--dropout', false, 'apply dropout after each recurrent layer')
 cmd:option('--dropoutProb', 0.5, 'probability of zeroing a neuron (dropout probability)')
@@ -77,18 +77,15 @@ end
 -- TODO, change this, but I am not sure what number should we use
 nIndex = 100 -- input words
 
-nClass = 100 -- UCF11 has 11 categories
+nClass = 11 -- UCF11 has 11 categories
 
 ds = {}
 -- TODO: ds.size should correspondes to the number of samples(frames) 
 ds.size = 1000
--- ds.size = 8
-
--- ds.FeatureDims = 4096 -- initial the dimension of feature vector
 ds.FeatureDims = 4096 -- initial the dimension of feature vector
 
+
 -- input dimension = ds.size x ds.FeatureDims x opt.rho = 1000 x 4096
--- ds.input = torch.LongTensor(ds.size, ds.FeatureDims, opt.rho)
 ds.input = torch.randn(ds.size, ds.FeatureDims, opt.rho)
 
 
@@ -101,75 +98,72 @@ ds.target = torch.DoubleTensor(ds.size):random(nClass)
 ------------------------------------------------------------
 
 -- Video Classification model
---  vc_rnn = nn.Sequential()
-
-if true then
-
-   -- local inputSize = opt.hiddenSize[1]
-   -- for i,hiddenSize in ipairs(opt.hiddenSize) do 
-
-   --    if i~= 1 and (not opt.lstm) and (not opt.gru) then
-   --       vc_rnn:add(nn.Sequencer(nn.Linear(inputSize, hiddenSize)))
-   --    end
-      
-   --    -- recurrent layer
-   --    local rnn
-   --    if opt.gru then
-   --       -- Gated Recurrent Units
-   --       rnn = nn.Sequencer(nn.GRU(inputSize, hiddenSize))
-   --    elseif opt.lstm then
-   --       -- Long Short Term Memory
-   --       rnn = nn.Sequencer(nn.FastLSTM(inputSize, hiddenSize))
-   --    else
-   --       -- simple recurrent neural network
-   --       rnn = nn.Recurrent(
-   --          hiddenSize, -- first step will use nn.Add
-   --          nn.Identity(), -- for efficiency (see above input layer) 
-   --          nn.Linear(hiddenSize, hiddenSize), -- feedback layer (recurrence)
-   --          nn.Sigmoid(), -- transfer function 
-   --          --99999 -- maximum number of time-steps per sequence
-   --          opt.rho
-   --       )
-   --       if opt.zeroFirst then
-   --          -- this is equivalent to forwarding a zero vector through the feedback layer
-   --          rnn.startModule:share(rnn.feedbackModule, 'bias')
-   --       end
+ vc_rnn = nn.Sequential()
 
 
-   --        rnn = nn.Sequencer(rnn)
 
+local inputSize = opt.hiddenSize[1]
+for i,hiddenSize in ipairs(opt.hiddenSize) do 
 
-   --    end
-      
+   if i~= 1 and (not opt.lstm) and (not opt.gru) then
+      vc_rnn:add(nn.Sequencer(nn.Linear(inputSize, hiddenSize)))
+   end
    
-   --    if opt.dropout then -- dropout it applied between recurrent layers
-   --       vc_rnn:add(nn.Sequencer(nn.Dropout(opt.dropoutProb)))
-   --    end
-      
-   --    inputSize = hiddenSize
-   -- end
+   -- recurrent layer
+   local rnn
+   if opt.gru then
+      -- Gated Recurrent Units
+      rnn = nn.Sequencer(nn.GRU(inputSize, hiddenSize))
+   elseif opt.lstm then
+      -- Long Short Term Memory
+      rnn = nn.Sequencer(nn.FastLSTM(inputSize, hiddenSize))
+   else
+      -- simple recurrent neural network
+      rnn = nn.Recurrent(
+         hiddenSize, -- first step will use nn.Add
+         nn.Identity(), -- for efficiency (see above input layer) 
+         nn.Linear(hiddenSize, hiddenSize), -- feedback layer (recurrence)
+         nn.Sigmoid(), -- transfer function 
+         --99999 -- maximum number of time-steps per sequence
+         opt.rho
+      )
+      if opt.zeroFirst then
+         -- this is equivalent to forwarding a zero vector through the feedback layer
+         rnn.startModule:share(rnn.feedbackModule, 'bias')
+      end
+      rnn = nn.Sequencer(rnn)
+   end
+   
+   vc_rnn:add(rnn)
 
-
-   rnn = nn.Recurrent(
-   opt.hiddenSize[1], -- size of output
-   nn.Linear(ds.FeatureDims, opt.hiddenSize[1]), -- input layer
-   nn.Linear(opt.hiddenSize[1], opt.hiddenSize[1]), -- recurrent layer
-   nn.Sigmoid(), -- transfer function
-   opt.rho
-   )
-
-   vc_rnn = nn.Sequential()
-   -- vc_rnn:insert(nn.SplitTable(3,1), 1) -- tensor to table of tensors, which can't not be used in 'nn.Sequencer'
-   -- vc_rnn:add(rnn)
-   :add(nn.FastLSTM(ds.FeatureDims, opt.hiddenSize[1]))
-   :add(nn.FastLSTM(opt.hiddenSize[1], opt.hiddenSize[2]))
-   :add(nn.Linear(opt.hiddenSize[2], nIndex))
-   :add(nn.LogSoftMax())
-
-   vc_rnn = nn.Sequencer(vc_rnn)
-
-
+   if opt.dropout then -- dropout it applied between recurrent layers
+      vc_rnn:add(nn.Sequencer(nn.Dropout(opt.dropoutProb)))
+   end
+   
+   inputSize = hiddenSize
 end
+
+
+-- rnn = nn.Recurrent(
+-- opt.hiddenSize[1], -- size of output
+-- nn.Linear(ds.FeatureDims, opt.hiddenSize[1]), -- input layer
+-- nn.Linear(opt.hiddenSize[1], opt.hiddenSize[1]), -- recurrent layer
+-- nn.Sigmoid(), -- transfer function
+-- opt.rho
+-- )
+
+-- vc_rnn = nn.Sequential()
+-- -- vc_rnn:insert(nn.SplitTable(3,1), 1) -- tensor to table of tensors, which can't not be used in 'nn.Sequencer'
+-- -- vc_rnn:add(rnn)
+-- :add(nn.FastLSTM(ds.FeatureDims, opt.hiddenSize[1]))
+-- :add(nn.FastLSTM(opt.hiddenSize[1], opt.hiddenSize[2]))
+-- :add(nn.Linear(opt.hiddenSize[2], nIndex))
+-- :add(nn.LogSoftMax())
+
+-- vc_rnn = nn.Sequencer(vc_rnn)
+
+
+
 
 -- input layer (i.e. word embedding space)
 -- vc_rnn:insert(nn.SplitTable(1,2), 1) -- tensor to table of tensors
@@ -189,15 +183,19 @@ end
 
 -- output layer
 
-if false then
+if true then
 
    -- vc_rnn:add(nn.SelectTable(-1)) -- this selects the last time-step of the rnn output sequence
-   vc_rnn:add(nn.Linear(inputSize, nIndex))
-   vc_rnn:add(nn.LogSoftMax())
+   -- vc_rnn:add(nn.Linear(inputSize, nIndex))
+   -- vc_rnn:add(nn.LogSoftMax())
 
    -- vc_rnn:add(nn.Sequencer(nn.SelectTable(-1))) -- this selects the last time-step of the rnn output sequence
-   -- vc_rnn:add(nn.Sequencer(nn.Linear(inputSize, nIndex)))
-   -- vc_rnn:add(nn.Sequencer(nn.LogSoftMax()))
+   vc_rnn:add(nn.Sequencer(nn.Linear(inputSize, nIndex)))
+   vc_rnn:add(nn.Sequencer(nn.LogSoftMax()))
+
+
+   -- vc_rnn = nn.Sequencer(vc_rnn)
+
 
    if opt.uniform > 0 then
       for k,param in ipairs(vc_rnn:parameters()) do
@@ -208,6 +206,8 @@ if false then
 end
 -- will recurse a single continuous sequence
 vc_rnn:remember((opt.lstm or opt.gru) and 'both' or 'eval')
+
+
 
 print(vc_rnn)
 

@@ -27,7 +27,7 @@ cmd:text('Train a Language Model on PennTreeBank dataset using RNN or LSTM or GR
 cmd:text('Example:')
 cmd:text("recurrent-language-model.lua --cuda --useDevice 2 --progress --zeroFirst --cutoffNorm 4 --opt.rho 10")
 cmd:text('Options:')
-cmd:option('--learningRate', 0.05, 'learning rate at t=0')
+cmd:option('--startLearningRate', 0.05, 'learning rate at t=0')
 cmd:option('--minLR', 0.00001, 'minimum learning rate')
 cmd:option('--saturateEpoch', 400, 'epoch at which linear decayed LR will reach minLR')
 cmd:option('--momentum', 0.9, 'momentum')
@@ -67,16 +67,6 @@ end
 -- Data
 ------------------------------------------------------------
 
--- ds = dp.PennTreeBank{
---    context_size=opt.rho, 
---    recurrent=true
--- }
--- ds:validSet():contextSize(opt.batchSize)
--- ds:testSet():contextSize(opt.batchSize)
-
--- TODO, change this, but I am not sure what number should we use
-nIndex = 100 -- input words
-
 nClass = 11 -- UCF11 has 11 categories
 
 ds = {}
@@ -88,7 +78,6 @@ ds.FeatureDims = 4096 -- initial the dimension of feature vector
 -- input dimension = ds.size x ds.FeatureDims x opt.rho = 1000 x 4096
 ds.input = torch.randn(ds.size, ds.FeatureDims, opt.rho)
 
-
 -- target dimension = ds.size x 1 = 1000 x 1
 ds.target = torch.DoubleTensor(ds.size):random(nClass)
 
@@ -98,9 +87,7 @@ ds.target = torch.DoubleTensor(ds.size):random(nClass)
 ------------------------------------------------------------
 
 -- Video Classification model
- vc_rnn = nn.Sequential()
-
-
+vc_rnn = nn.Sequential()
 
 local inputSize = opt.hiddenSize[1]
 for i,hiddenSize in ipairs(opt.hiddenSize) do 
@@ -157,7 +144,7 @@ end
 -- -- vc_rnn:add(rnn)
 -- :add(nn.FastLSTM(ds.FeatureDims, opt.hiddenSize[1]))
 -- :add(nn.FastLSTM(opt.hiddenSize[1], opt.hiddenSize[2]))
--- :add(nn.Linear(opt.hiddenSize[2], nIndex))
+-- :add(nn.Linear(opt.hiddenSize[2], nClass))
 -- :add(nn.LogSoftMax())
 
 -- vc_rnn = nn.Sequencer(vc_rnn)
@@ -166,6 +153,7 @@ end
 
 
 -- input layer (i.e. word embedding space)
+
 -- vc_rnn:insert(nn.SplitTable(1,2), 1) -- tensor to table of tensors
  -- vc_rnn:insert(nn.SplitTable(3,1), 1) -- tensor to table of tensors
 
@@ -173,37 +161,28 @@ if opt.dropout then
    vc_rnn:insert(nn.Dropout(opt.dropoutProb), 1)
 end
 
-
-
 -- TODO: LookupTable can only take 1D or 2D input 
--- lookup = nn.LookupTable(nIndex, opt.hiddenSize[1])
+-- lookup = nn.LookupTable(nClass, opt.hiddenSize[1])
 -- lookup.maxOutNorm = -1 -- disable maxParamNorm on the lookup table
 -- vc_rnn:insert(lookup, 1)
 
 
 -- output layer
 
-if true then
+vc_rnn:add(nn.SelectTable(-1)) -- this selects the last time-step of the rnn output sequence
+vc_rnn:add(nn.Linear(inputSize, nClass))
+vc_rnn:add(nn.LogSoftMax())
 
-   -- vc_rnn:add(nn.SelectTable(-1)) -- this selects the last time-step of the rnn output sequence
-   -- vc_rnn:add(nn.Linear(inputSize, nIndex))
-   -- vc_rnn:add(nn.LogSoftMax())
+-- vc_rnn:add(nn.Sequencer(nn.SelectTable(-1))) -- this selects the last time-step of the rnn output sequence
+-- vc_rnn:add(nn.Sequencer(nn.Linear(inputSize, nClass)))
+-- vc_rnn:add(nn.Sequencer(nn.LogSoftMax()))
 
-   -- vc_rnn:add(nn.Sequencer(nn.SelectTable(-1))) -- this selects the last time-step of the rnn output sequence
-   vc_rnn:add(nn.Sequencer(nn.Linear(inputSize, nIndex)))
-   vc_rnn:add(nn.Sequencer(nn.LogSoftMax()))
-
-
-   -- vc_rnn = nn.Sequencer(vc_rnn)
-
-
-   if opt.uniform > 0 then
-      for k,param in ipairs(vc_rnn:parameters()) do
-         param:uniform(-opt.uniform, opt.uniform)
-      end
+if opt.uniform > 0 then
+   for k,param in ipairs(vc_rnn:parameters()) do
+      param:uniform(-opt.uniform, opt.uniform)
    end
-
 end
+
 -- will recurse a single continuous sequence
 vc_rnn:remember((opt.lstm or opt.gru) and 'both' or 'eval')
 
@@ -216,8 +195,8 @@ print(vc_rnn)
 -- Train
 ------------------------------------------------------------
 -- local inputs, targets = torch.LongTensor(), torch.LongTensor()
-local inputs, targets = torch.Tensor(), torch.Tensor()
 -- local inputs, targets = {}, {}
+local inputs, targets = torch.Tensor(), torch.Tensor()
 
 local indices = torch.LongTensor(opt.batchSize)
 -- indices:resize(opt.batchSize) -- indices to be used later, so it is resized to batchsize
@@ -225,18 +204,20 @@ local indices = torch.LongTensor(opt.batchSize)
 -- build criterion
 criterion = nn.ClassNLLCriterion()
 
+opt.learningRate = opt.startLearningRate
+
 for iteration = 1, opt.maxEpoch do
-   -- 1. create a sequence of opt.rho time-steps
-   ---[[
+   -- [[create a sequence of opt.rho time-steps
+
    indices:random(1,ds.size) -- choose some random samples for training
    inputs:index(ds.input, 1,indices)
    targets:index(ds.target, 1,indices)
-   --]]
 
    -- Convert tensor to table of tensors
    mlp = nn.SplitTable(3,1)
    inputs = mlp:forward(inputs)
 
+   -- Naive way to convert tensor to table of tensors
    -- for step = 1, opt.rho do
    --    -- batch of inputs
    --    inputs[step] = inputs[step] or ds.input.new()
@@ -244,38 +225,37 @@ for iteration = 1, opt.maxEpoch do
    --    inputs[step] = (ds.input:select(3,step))
    -- end
 
-   -- 2. forward sequence through vc_rnn
+   -- [[forward sequence through vc_rnn
    
    vc_rnn:zeroGradParameters() 
 
-
-
-
    local outputs = vc_rnn:forward(inputs)
-
-print(outputs)
----[[
-local answer
-repeat
-io.write("continue with this operation (y/n)? ")
-io.flush()
-answer=io.read()
-until answer=="y" or answer=="n"
---]]
-
-
    local err = criterion:forward(outputs, targets)
    
    print(string.format("Iteration %d ; NLL err = %f ", iteration, err))
 
-   -- 3. backward sequence through vc_rnn (i.e. backprop through time)
+
+   -- backward sequence through vc_rnn (i.e. backprop through time)
    
    local gradOutputs = criterion:backward(outputs, targets)
+
    local gradInputs = vc_rnn:backward(inputs, gradOutputs)
    
-   -- 4. update
+   -- update parameters
    
    vc_rnn:updateParameters(opt.learningRate)
+
+   -- learning rate decay
+   opt.learningRate = opt.learningRate + (opt.minLR - opt.startLearningRate)/opt.saturateEpoch
+   opt.learningRate = math.max(opt.minLR, opt.learningRate)
+   if not opt.silent then
+      print("learning rate = ", opt.learningRate)
+   end
+
+   -- empty 'inputs' tensor
+   -- TODO: collectgarbage(?)
+   inputs = torch.Tensor()
+
 end
 
 

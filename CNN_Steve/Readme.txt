@@ -5,3 +5,5 @@ It will do the following steps:
 2. load the pre-trained model ("NIN" network) & the ImageNet labels
 3. load the previously downloaded video
 4. process the video & make prediction frame-by-frame
+
+After running these codes, a new empty folder "out_frames" will be generated. You can ignore it. That's only for debugging.

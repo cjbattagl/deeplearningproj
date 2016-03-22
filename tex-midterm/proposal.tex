@@ -1,0 +1,66 @@
+\documentclass[10pt]{article}
+%\documentclass[leqno,onefignum,onetabnum]{siamltex1213}
+\newcommand{\ourtitle}{CS 8803DL: Deep Learning Project Proposal}
+\newcommand{\ourinstitution}{Georgia Institute of Technology}
+\newcommand{\ourauthors}{}
+
+\usepackage{color}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{authblk}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{rotating}
+\usepackage{booktabs}
+\usepackage{vuduc-stdpkgs}
+\usepackage{vuduc-typography}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+%\usepackage{multirow}
+%\usepackage{lscape}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+%\usepackage{morefloats}
+%\usepackage{paralist}
+\usepackage{sidenotes}
+\usepackage{tablefootnote}
+\usepackage[letterpaper, margin=1.2in]{geometry}
+\setcounter{page}{1}
+\pagenumbering{arabic}
+
+\newcommand{\ignore}[1]{}
+% Acronyms
+
+% Additional math notation
+\newcommand{\T}[1]{\ensuremath{\mathbf{\mathcal{\uppercase{#1}}}}\xspace} % tensor
+\newcommand{\M}[1]{\ensuremath{\mathbf{\uppercase{#1}}}\xspace} % matrix
+\newcommand{\V}[1]{\ensuremath{\mathbf{\lowercase{#1}}}\xspace} % vector
+\newcommand{\R}{\ensuremath{\mathbb{R}}\xspace}
+\newcommand{\Iall}[2]{#1_1\times\dots\times #1_#2} 
+\newcommand{\Iallbutone}[5]{#1_1 #4\dots#4 #1_{#3-1} #5 #4 #1_{#3+1}#4\dots#4 #1_#2}
+\newcommand{\Rtwo}[2]{\ensuremath{\R^{{#1}\times{#2}}}\xspace} % 2-D: R^{a x b}
+\newcommand{\Rthree}[3]{\ensuremath{\R^{{#1}\times{#2}\times{#3}}}\xspace} % 3-D: R^{a x b x c}
+\newcommand{\Rfour}[4]{\ensuremath{\R^{{#1}\times{#2}\times{#3}\times{#4}}}\xspace} % 4-D: R^{a x b x c x d}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{\vspace{-1.4cm}\ourtitle}
+\author{Casey Battaglino\thanks{cbattaglino3@gatech.edu}}
+\author{Min-Hung Chen\thanks{cmhungsteve@gatech.edu}}
+\author{Chih-Yao Ma\thanks{cyma@gatech.edu}}
+\author{Hao Yan\thanks{yanhao@gatech.edu}}
+\affil{}
+%\affil{Georgia Institute of Technology}
+\date{}
+\begin{document}
+%\begin{abstract}
+%\end{abstract}
+\maketitle
+%\tableofcontents
+%=================================BODY==================================
+\section{Proposal}                  \label{sec:proposal}
+                                    \input{0-00-proposal.tex}
+%=======================================================================
+\bibliographystyle{abbrv} \bibliography{bib}
+%\input{appendix}
+\end{document}
+%eof

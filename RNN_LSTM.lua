@@ -130,7 +130,9 @@ for i,hiddenSize in ipairs(opt.hiddenSize) do
    inputSize = hiddenSize
 end
 
-
+------------------------------------------------------------
+-- if only using simple Sequencer
+------------------------------------------------------------
 -- rnn = nn.Recurrent(
 -- opt.hiddenSize[1], -- size of output
 -- nn.Linear(ds.FeatureDims, opt.hiddenSize[1]), -- input layer
@@ -155,7 +157,7 @@ end
 -- input layer (i.e. word embedding space)
 
 -- vc_rnn:insert(nn.SplitTable(1,2), 1) -- tensor to table of tensors
- -- vc_rnn:insert(nn.SplitTable(3,1), 1) -- tensor to table of tensors
+ vc_rnn:insert(nn.SplitTable(3,1), 1) -- tensor to table of tensors
 
 if opt.dropout then
    vc_rnn:insert(nn.Dropout(opt.dropoutProb), 1)
@@ -213,9 +215,13 @@ for iteration = 1, opt.maxEpoch do
    inputs:index(ds.input, 1,indices)
    targets:index(ds.target, 1,indices)
 
+
+   ------------------------------------------------------------
+   -- If SplitTable in Sequencer doesn't work, process the input first
+   ------------------------------------------------------------
    -- Convert tensor to table of tensors
-   mlp = nn.SplitTable(3,1)
-   inputs = mlp:forward(inputs)
+   -- mlp = nn.SplitTable(3,1)
+   -- inputs = mlp:forward(inputs)
 
    -- Naive way to convert tensor to table of tensors
    -- for step = 1, opt.rho do

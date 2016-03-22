@@ -2,6 +2,7 @@
 -- CS8803DL Spring 2016 (Instructor: Zsolt Kira)
 -- Final Project: Video Classification
 
+-- Load one video & generate a feature matrix for this video
 
 -- ffmpeg usage:
 -- Video{
@@ -23,7 +24,7 @@
 
 -- author: Min-Hung Chen
 -- contact: cmhungsteve@gatech.edu
--- Last updated: 03/20/2016
+-- Last updated: 03/22/2016
 
 --#!/usr/bin/env torch
 
@@ -34,51 +35,16 @@ require 'qtwidget'
 require 'imgraph'
 require 'nnx'
 
-require 'classify_video'
+--require 'classify_video'
+require 'gen_feature'
 
 ----------------------------------------------
--- 			Download the video				--
+-- 					Data paths				--
 ----------------------------------------------
-print '==> Downloading the video......'
-videoUrl = 'https://www.dropbox.com/s/8kkilo6vkstwcnf/test.mpg'
--- videoUrl = 'https://www.dropbox.com/s/suyeymlof3gx6lz/v_riding_20_02.mpg'
--- videoUrl = 'https://www.dropbox.com/s/hsnaho7hcgytydj/v_spiking_20_02.mpg'
--- videoUrl = 'https://www.dropbox.com/s/3ixls6wqch0cnfv/v_swing_20_02.mpg'
--- videoUrl = 'https://www.dropbox.com/s/pzxbnaa2v8pjuj4/v_shooting_20_02.mpg'
--- videoUrl = 'https://www.dropbox.com/s/876kj0d4rcbdddj/v_tennis_20_02.mpg'
--- videoUrl = 'https://www.dropbox.com/s/v6iowtofkp0zqgr/v_walk_dog_20_02.mpg'
--- videoUrl = 'https://www.dropbox.com/s/os28z9ofxypq24t/v_biking_20_02.mpg'
--- videoUrl = 'https://www.dropbox.com/s/0nsz5qt7e0iq6ap/v_diving_20_02.mpg'
--- videoUrl = 'https://www.dropbox.com/s/sy07cjrm24v093w/v_golf_20_02.mpg'
--- videoUrl = 'https://www.dropbox.com/s/71zf2q40mzoames/v_juggle_20_02.mpg'
--- videoUrl = 'https://www.dropbox.com/s/nsetqtey8fgssg3/v_jumping_20_02.mpg'
-
-videoName = paths.basename(videoUrl)
-if not paths.filep(videoName) then os.execute('wget '..videoUrl) end
-
-----------------
--- parse args --
-----------------
-op = xlua.OptionParser('%prog [options]')
-op:option{'-c', '--camera', action='store', dest='camidx',
-          help='camera index: /dev/videoIDX (if no video given)', 
-          default=0}
-op:option{'-v', '--video', action='store', dest='video',
-          help='video file to process', default=videoName}
-op:option{'-f', '--fps', action='store', dest='fps',
-          help='number of frames per second', default=30}
-op:option{'-t', '--time', action='store', dest='seconds',
-          help='length to process (in seconds)', default=10}
-op:option{'-w', '--width', action='store', dest='width',
-          help='resize video, width', default=224}
-op:option{'-h', '--height', action='store', dest='height',
-          help='resize video, height', default=224}
-op:option{'-z', '--zoom', action='store', dest='zoom',
-          help='display zoom', default=1}
-opt,args = op:parse()
-
--- data path --
 dir_model = './models/'
+dir_database = '../Dataset/UCF11_updated_mpg/'
+dir_class = dir_database..'basketball/'
+dir_video = dir_class..'v_shooting_02/'
 
 ----------------------------------------------
 -- 			User-defined parameters			--
@@ -86,6 +52,7 @@ dir_model = './models/'
 ------ model selection ------
 -- 1. NIN model (from Torch)
 model_name = dir_model .. 'nin_nobn_final.t7'
+dimFeat = 1024
 
 ---- 2. GoogleNet model (from Torch) ==> need cuda
 --model_name = dir_model .. 'GoogLeNet_v2.t7'
@@ -102,6 +69,51 @@ model_name = dir_model .. 'nin_nobn_final.t7'
 -- --image_name = 'Goldfish3.jpg'
 -- image_name = 'frame-000001.png'
 --im = image.load(dir_image .. image_name)
+
+------ input video ------
+-- 1. load from the local folder 
+videoName = 'v_shooting_02_01'
+videoPath = dir_video..videoName..'.mpg'
+
+-- -- 2. download from the dropbox
+-- print '==> Downloading the video......'
+-- videoUrl = 'https://www.dropbox.com/s/8kkilo6vkstwcnf/test.mpg'
+-- -- videoUrl = 'https://www.dropbox.com/s/suyeymlof3gx6lz/v_riding_20_02.mpg'
+-- -- videoUrl = 'https://www.dropbox.com/s/hsnaho7hcgytydj/v_spiking_20_02.mpg'
+-- -- videoUrl = 'https://www.dropbox.com/s/3ixls6wqch0cnfv/v_swing_20_02.mpg'
+-- -- videoUrl = 'https://www.dropbox.com/s/pzxbnaa2v8pjuj4/v_shooting_20_02.mpg'
+-- -- videoUrl = 'https://www.dropbox.com/s/876kj0d4rcbdddj/v_tennis_20_02.mpg'
+-- -- videoUrl = 'https://www.dropbox.com/s/v6iowtofkp0zqgr/v_walk_dog_20_02.mpg'
+-- -- videoUrl = 'https://www.dropbox.com/s/os28z9ofxypq24t/v_biking_20_02.mpg'
+-- -- videoUrl = 'https://www.dropbox.com/s/0nsz5qt7e0iq6ap/v_diving_20_02.mpg'
+-- -- videoUrl = 'https://www.dropbox.com/s/sy07cjrm24v093w/v_golf_20_02.mpg'
+-- -- videoUrl = 'https://www.dropbox.com/s/71zf2q40mzoames/v_juggle_20_02.mpg'
+-- -- videoUrl = 'https://www.dropbox.com/s/nsetqtey8fgssg3/v_jumping_20_02.mpg'
+
+-- videoName = paths.basename(videoUrl)
+-- if not paths.filep(videoName) then os.execute('wget '..videoUrl) end
+-- videoPath = videoName
+
+----------------
+-- parse args --
+----------------
+op = xlua.OptionParser('%prog [options]')
+op:option{'-c', '--camera', action='store', dest='camidx',
+          help='camera index: /dev/videoIDX (if no video given)', 
+          default=0}
+op:option{'-v', '--video', action='store', dest='video',
+          help='video file to process', default=videoPath}
+op:option{'-f', '--fps', action='store', dest='fps',
+          help='number of frames per second', default=10}
+op:option{'-t', '--time', action='store', dest='seconds',
+          help='length to process (in seconds)', default=10}
+op:option{'-w', '--width', action='store', dest='width',
+          help='resize video, width', default=224}
+op:option{'-h', '--height', action='store', dest='height',
+          help='resize video, height', default=224}
+op:option{'-z', '--zoom', action='store', dest='zoom',
+          help='display zoom', default=1}
+opt,args = op:parse()
 
 ----------------------------------------------
 -- 					Models 					--
@@ -172,12 +184,27 @@ vidWidth =  vidTensor:size(4)
 ----------------------------------------------
 --           Process with the video         --
 ----------------------------------------------
-print '==> Begin predicting......'
+-- print '==> Begin predicting......'
+-- for i=1, numFrame do
+--   local inFrame = vidTensor[i]
+--   print('frame '..tostring(i)..': ')
+--   classify_video(inFrame, net, synset_words)
+  
+-- end
+
+print '==> Generating the feature matrix......'
+net:remove(30) -- process the model
+
+featMat = torch.Tensor(dimFeat, numFrame):zero():float()
+
 for i=1, numFrame do
   local inFrame = vidTensor[i]
   print('frame '..tostring(i)..': ')
-  classify_video(inFrame, net, synset_words)
+  local feat = gen_feature(inFrame, net, synset_words)
+  featMat[{{},{i}}] = feat
 end
+
+print(featMat:size())
 
 --print(frame)
 --print(video)

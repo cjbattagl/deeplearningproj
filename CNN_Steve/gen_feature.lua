@@ -10,8 +10,9 @@
 -- 1. Models: there are two kinds of pre-trained models:
 -- 		1) use 'loadcaffe' to load a pre-trained model built in caffe (produce strange results now)
 --		2) original Torch model (now I only have NIN)
--- 2. input: 	image
---	  output:	prediction labels
+-- 2. extract the intermediate feature (e.g. fc8)
+-- 3. input: 	image
+--	  output:	feature vector
 
 -- author: Min-Hung Chen
 -- contact: cmhungsteve@gatech.edu
@@ -30,7 +31,7 @@ function preprocess(im, img_mean, img_std)
 end
 
 
-function classify_video(inFrame, net, synset_words)
+function gen_feature(inFrame, net, synset_words)
 
 --require 'loadcaffe' 
 require 'image'
@@ -65,24 +66,26 @@ local I = preprocess(im, img_mean, img_std):view(1,3,224,224):float()
 ----------------------------------------------
 -- 1. forward to get feature vectors
 --print 'Obtain the final feature'
---feat = net:forward(I)
---print(feat)
+local feat = net:forward(I)
+feat:t()
+--print(feat:size())
+return feat
 
--- 2. forward to get prediction labels
--- -- (1) Top 1 prediction
--- -- print 'Propagate through the model, show the best classes'
--- --local _,classes = net:forward(I):view(-1):sort(true)
--- local _,classes = net:forward(I):view(-1):max(1)
---   print('The predicted class is ', synset_words[classes[1] ])
+-- -- 2. forward to get prediction labels
+-- -- -- (1) Top 1 prediction
+-- -- -- print 'Propagate through the model, show the best classes'
+-- -- --local _,classes = net:forward(I):view(-1):sort(true)
+-- -- local _,classes = net:forward(I):view(-1):max(1)
+-- --   print('The predicted class is ', synset_words[classes[1] ])
 
--- Top 3 predictions
--- print 'Propagate through the model, sort outputs in decreasing order and show 3 best classes'
-local _,classes = net:forward(I):view(-1):sort(true)
---_,classes = net:forward(I):sort(true)
---print(classes)
-for i=1,3 do
-  print('predicted class '..tostring(i)..': ', synset_words[classes[i] ])
-end
+-- -- Top 3 predictions
+-- -- print 'Propagate through the model, sort outputs in decreasing order and show 3 best classes'
+-- local _,classes = net:forward(I):view(-1):sort(true)
+-- --_,classes = net:forward(I):sort(true)
+-- --print(classes)
+-- for i=1,3 do
+--   print('predicted class '..tostring(i)..': ', synset_words[classes[i] ])
+-- end
 
 
 

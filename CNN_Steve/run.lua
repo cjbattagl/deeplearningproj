@@ -24,7 +24,7 @@
 
 -- author: Min-Hung Chen
 -- contact: cmhungsteve@gatech.edu
--- Last updated: 03/22/2016
+-- Last updated: 03/23/2016
 
 --#!/usr/bin/env torch
 
@@ -35,7 +35,7 @@ require 'qtwidget'
 require 'imgraph'
 require 'nnx'
 
---require 'classify_video'
+require 'classify_video'
 require 'gen_feature'
 
 ----------------------------------------------
@@ -43,8 +43,8 @@ require 'gen_feature'
 ----------------------------------------------
 dir_model = './models/'
 dir_database = '../Dataset/UCF11_updated_mpg/'
-dir_class = dir_database..'basketball/'
-dir_video = dir_class..'v_shooting_02/'
+dir_class = dir_database..'volleyball_spiking/'
+dir_video = dir_class..'v_spiking_14/'
 
 ----------------------------------------------
 -- 			User-defined parameters			--
@@ -72,7 +72,7 @@ dimFeat = 1024
 
 ------ input video ------
 -- 1. load from the local folder 
-videoName = 'v_shooting_02_01'
+videoName = 'v_spiking_14_02'
 videoPath = dir_video..videoName..'.mpg'
 
 -- -- 2. download from the dropbox
@@ -104,15 +104,19 @@ op:option{'-c', '--camera', action='store', dest='camidx',
 op:option{'-v', '--video', action='store', dest='video',
           help='video file to process', default=videoPath}
 op:option{'-f', '--fps', action='store', dest='fps',
-          help='number of frames per second', default=10}
+          help='number of frames per second', default=30}
 op:option{'-t', '--time', action='store', dest='seconds',
-          help='length to process (in seconds)', default=10}
+          help='length to process (in seconds)', default=2}
 op:option{'-w', '--width', action='store', dest='width',
           help='resize video, width', default=224}
 op:option{'-h', '--height', action='store', dest='height',
           help='resize video, height', default=224}
 op:option{'-z', '--zoom', action='store', dest='zoom',
           help='display zoom', default=1}
+op:option{'-fe', '--feat', action='store', dest='feat',
+          help='option for generating features', default=true}
+op:option{'-pr', '--pred', action='store', dest='pred',
+          help='option for prediction', default=false}
 opt,args = op:parse()
 
 ----------------------------------------------
@@ -129,7 +133,7 @@ net = torch.load(model_name):unpack():float()
 net:evaluate()
 
 -- model modification
---net:remove(30)
+net:remove(30) -- process the model
 --net:add(nn.View(-1))
 
 print(net)
@@ -184,29 +188,29 @@ vidWidth =  vidTensor:size(4)
 ----------------------------------------------
 --           Process with the video         --
 ----------------------------------------------
--- print '==> Begin predicting......'
--- for i=1, numFrame do
---   local inFrame = vidTensor[i]
---   print('frame '..tostring(i)..': ')
---   classify_video(inFrame, net, synset_words)
-  
--- end
-
-print '==> Generating the feature matrix......'
-net:remove(30) -- process the model
-
-featMat = torch.Tensor(dimFeat, numFrame):zero():float()
-
-for i=1, numFrame do
-  local inFrame = vidTensor[i]
-  print('frame '..tostring(i)..': ')
-  local feat = gen_feature(inFrame, net, synset_words)
-  featMat[{{},{i}}] = feat
+if opt.pred then
+  print '==> Begin predicting......'
+  for f=1, numFrame do
+    local inFrame = vidTensor[f]
+    print('frame '..tostring(f)..': ')
+    classify_video(inFrame, net, synset_words)
+            
+  end
 end
 
-print(featMat:size())
+if opt.feat then
+  print '==> Generating the feature matrix......'
+  featMat = torch.Tensor(dimFeat, numFrame):zero():float()
+  for f=1, numFrame do
+    local inFrame = vidTensor[f]
+    print('frame '..tostring(f)..'...')
+    local feat = gen_feature(inFrame, net, synset_words)
+    featMat[{{},{f}}] = feat
+  end
 
---print(frame)
+print(featMat:size())
+end
+
 --print(video)
 
 --classify_video(im, net, synset_words)

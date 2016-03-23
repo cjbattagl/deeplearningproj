@@ -58,6 +58,16 @@ The following is a set of experiments that we may perform, given enough time:
 \item Study if slow-fusion \emph{combined} with optical-flow input provides significantly better results than either approach on its own.
 \end{itemize}
 We may experiment with different strategies in normalization and augmentation, given enough time.
+
+\subsection*{Tasks to complete (members)}
+%Below are several tasks to be completed as we moving forward... Please describe as much as you can. We will deal with the page length later. 
+
+\subsubsection*{RNN with LSTM as decoder (Chih-Yao Ma)}
+In this specific task, we aim to implement a RNN with LSTM as the baseline for performance comparision. This RNN is implemented from scratch using \href{https://github.com/Element-Research/rnn}{rnn library} provided by Element-Research. In this RNN, the user can specify if he/she prefer to use linear layer, LSTM, or even GRU layers. By initializing the number of hiddensize for each layers, one can create arbitary stacked layers, i.e. stacked LSTMs by ${'4096, 800, 200'}$. The user can also design how the learning rate decay through the training process by using commmand line arguments. 
+
+To be complete: Implement CUDA usage, cross-validation, and take feature vectors extracted from CNN and experiment how different parameters and architectures affect training performance. 
+
+
 \subsection*{Group Tasking}
 %A plan of breaking up the project (who will do what). Note that all team members must make a meaningful/significant contribution (i.e. not just do the reporting/posters).
 The following is a tentative list of tasks. As we move closer to our experiments the list will undoubtedly grow. 

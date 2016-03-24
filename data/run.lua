@@ -46,18 +46,15 @@ end
 -- gaussian (a gaussian, really, is always useful)
 gaussian = image.gaussian(3)
 
--- process function
+-- this performs a simple convolution as a test
 function process()
    -- (1) grab frame
    frame = video:forward()
-
    -- (2) compute affinity graph on input image
    frame_smoothed = image.convolve(frame, gaussian, 'same')
    graph = imgraph.graph(frame_smoothed)
-
    -- (3) cut graph using min-spanning tree
    mstsegm = imgraph.segmentmst(graph, 2, 20)
-
    -- (4) pool the input frame into the segmentation
    cartoon = imgraph.histpooling(frame:clone(), mstsegm)
 end
@@ -68,6 +65,7 @@ function display()
 --   image.display{image={frame,cartoon}, win=win, zoom=opt.zoom}
 end
 
+process()
 -- setup gui
 --timer = qt.QTimer()
 --timer.interval = 10

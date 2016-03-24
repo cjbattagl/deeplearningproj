@@ -1,2 +1,0 @@
-# deeplearningproj
-deep learning project

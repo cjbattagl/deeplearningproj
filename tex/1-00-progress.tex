@@ -33,6 +33,9 @@ Short-Term Memory (LSTM)/Recurrent Neural Networks (RNNs)~\cite{ltrcn}.
 Using a 3D-CNN, it is possible to build a classifier on a moving window
 of frames using 3D convolutions to extract useful local movement information. However, 3D-CNNs introduce a massive memory blowup that may make training infeasible on GPUs.
 To address this, we would like to use the slow-fusion model~\cite{cnnvid} instead of 3D kernels. In addition, we also plan to apply 3D kernels to one or two layers to check the improvement if we don't meet the memory problem. On the other hand, an LSTM/RNN approach is able to build the classifier with long term memory using a much larger number of frames at once. Combining a slow-fusion CNN with LSTM would combine the local movement information with long-term memory, with possible gains in learning.
+
+CNN + CNN (1D convolution) ==> Yan
+
 % LSTM
 Furthermore, the current LSTM model is built on the fully-connected
 layer, which does not conserve spatial information. We would like to examine the 
@@ -62,22 +65,36 @@ We may experiment with different strategies in normalization and augmentation, g
 \subsection*{Tasks to complete (members)}
 %Below are several tasks to be completed as we moving forward... Please describe as much as you can. We will deal with the page length later. 
 
-\subsubsection*{RNN with LSTM as decoder (Chih-Yao Ma)}
-In this specific task, we aim to implement a RNN with LSTM as the baseline for performance comparision. This RNN is implemented from scratch using \href{https://github.com/Element-Research/rnn}{rnn library} provided by Element-Research. In this RNN, the user can specify if he/she prefer to use linear layer, LSTM, or even GRU layers. By initializing the number of hiddensize for each layers, one can create arbitary stacked layers, i.e. stacked LSTMs by ${'4096, 800, 200'}$. The user can also design how the learning rate decay through the training process by using commmand line arguments. 
+\subsubsection*{data preparation by optical flow (Casey)}
+
+\subsubsection*{Build CNN as the spatial encoder (Min-Hung Chen, Hao Yan)}
+%Compare different CNN architectures
+%    Use CNN to extract feature vectors from both UCF11, UCF101
+Before we encoder the temporal information into the final features, we need to encode spatial information first. In this task, we chose the 'Network-In-Network'~\cite{nin} model as the CNN architecture, and forwarded all the frames to CNN to obtain feature vectors for these frames. Currently we used the database UCF-11 for the primary experiment. There were 11 classes and 100 videos for each class, and we only selected the first 57 frames (The shortest video has 57 frames). We extracted the features from the layer right before the last linear layer in the NIN network, which have 1024 dimension. Therefore, the final feature dimension for each video will be 1024 x 57, and we will forward the features to the next network to encode the temporal information.
+
+To be complete: Compare different CNN architectures. Select lower frame rates instead of using all the adjacent frames and compare the results. Generate features from a more complicated database UCF-101.
+
+\subsubsection*{RNN with LSTM as one temporal encoder (Chih-Yao Ma)}
+In this specific task, we aim to implement a RNN with LSTM as the baseline for performance comparison. This RNN is implemented from scratch using \href{https://github.com/Element-Research/rnn}{rnn library} provided by Element-Research. In this RNN, the user can specify if he/she prefer to use linear layer, LSTM, or even GRU layers. By initializing the number of hidden size for each layers, one can create arbitrary stacked layers, i.e. stacked LSTMs by ${'4096, 800, 200'}$. The user can also design how the learning rate decay through the training process by using command line arguments. 
 
 To be complete: Implement CUDA usage, cross-validation, and take feature vectors extracted from CNN and experiment how different parameters and architectures affect training performance. 
 
+\subsubsection*{CNN as another temporal encoder (Min-Hung Chen)}
+%     refer to language model using CNN as decoder, regular 2D kernel, 1D-kernel against time-domain, CUDA usage, LearningRate, architectures design
+According to the success of modeling languages using CNN architectures~\cite{cnnSC,cnnMNLS}, we plan to model the temporal information across different frames using CNN architectures as well, and compare the performance and results with the previous RNN architecture. We plan to design the network based on the language models~\cite{cnnSC,cnnMNLS}, and compare the results between 1D and 2D convolution. 
+
+To be complete: design CNN architectures using 1D and 2D convolution kernels as temporal encoders. Test different parameters for learning. Implement the CUDA version of the encoder for acceleration.
 
 \subsection*{Group Tasking}
 %A plan of breaking up the project (who will do what). Note that all team members must make a meaningful/significant contribution (i.e. not just do the reporting/posters).
 The following is a tentative list of tasks. As we move closer to our experiments the list will undoubtedly grow. 
 \begin{itemize}
-\item Proposal writing - Steve, Hao, Casey
-\item Proposal presentation - Yao
+\item Proposal writing - Min-Hung Chen, Hao, Casey
+\item Proposal presentation - Chih-Yao Ma
 \item Read and understand papers on 2D-LSTM - Everyone
 %\item Read and understand caffe code that implements 2D-CNN and LSTM.
-\item Implement LSTM: Yao, Casey
-\item Implement CNN: Steve, Hao
+\item Implement the temporal encoder with LSTM: Chih-Yao Ma, Casey
+\item Implement the spatial and temporal encoder with CNN: Min-Hung Chen, Hao
 \item Preparation of UCF data (incl. optical flow) - Casey
 \end{itemize}
 

@@ -15,9 +15,9 @@
 
 require 'dp'
 require 'rnn'
-
+require 'sys'
 version = 1
-
+c = sys.COLORS
 
 
 --[[command line arguments]]--
@@ -55,6 +55,9 @@ cmd:option('--dropoutProb', 0.5, 'probability of zeroing a neuron (dropout proba
 cmd:option('--trainEpochSize', -1, 'number of train examples seen between each epoch')
 cmd:option('--validEpochSize', -1, 'number of valid examples used for early stopping and cross-validation') 
 
+cmd:option('--featFile', '', 'file of feature vectors')
+cmd:option('--targFile', '', 'file of target vector')
+
 cmd:text()
 opt = cmd:parse(arg or {})
 opt.hiddenSize = dp.returnString(opt.hiddenSize)
@@ -74,13 +77,28 @@ ds = {}
 ds.size = 1000
 ds.FeatureDims = 4096 -- initial the dimension of feature vector
 
-
 -- input dimension = ds.size x ds.FeatureDims x opt.rho = 1000 x 4096
-ds.input = torch.randn(ds.size, ds.FeatureDims, opt.rho)
+if not (opt.featFile == '') then
+   -- read feature file from command line
+   print(' - - Reading external feature file . . .')
+   file = torch.DiskFile(opt.featFile, 'r')
+   ds.input = file:readObject()
+else
+   -- generate random feature file
+   print(c.red .. ' - - No --featFile specified. Generating random feature matrix . . . ' .. c.white)
+   ds.input = torch.randn(ds.size, ds.FeatureDims, opt.rho)
+end
 
 -- target dimension = ds.size x 1 = 1000 x 1
-ds.target = torch.DoubleTensor(ds.size):random(nClass)
-
+if not (opt.targFile == '') then
+   -- read feature file from command line
+   print(' - - Reading external target file . . .')
+   file = torch.DiskFile(opt.targFile, 'r')
+   ds.target = file:readObject()
+else
+   print(c.red .. ' - - No --targFile specified. Generating random target vector . . . ' .. c.white)
+   ds.target = torch.DoubleTensor(ds.size):random(nClass)
+end
 
 ------------------------------------------------------------
 -- Model 

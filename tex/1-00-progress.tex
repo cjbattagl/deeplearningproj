@@ -1,12 +1,11 @@
 \subsection*{Motivation}
 %What problem are you trying to solve? Why is this hard right now?
-Deep convolutional neural networks are a leading technique for image classification.
-However, \emph{video} classification is less developed.
+While deep convolutional neural networks are a leading technique for image classification, \emph{video} classification is not as developed.
 While it is certainly possible to simply run a neural network on each individual frame of a video, this sacrifices a wealth of temporal attributes such as movement, gestures, gait, etc.
 There are indeed methods of preprocessing temporal information into a single 2-dimensional input~\cite{brox}, but a more attractive research goal is to develop a neural network that can discover temporal relationships on its own.
 There are multiple recent approaches towards this goal, but as of yet no consensus on which is superior.
 
-The difficulties in training neural networks on video input include the following: memory requirements (particularly if 3D convolutions are used), fewer public data sets, size of the data sets (for instance, the Sports-1M data set is $\approx 4TB$ large), and lack of consensus on which approach is most effective. 
+The difficulties in training neural networks on video input include the following: memory requirements (particularly if 3D convolutions are used), fewer public data sets, size of the data sets (for instance, the Sports-1M data set is $\approx 4TB$ large), and lack of consensus on which structural approaches are most effective. 
 
 Our goal is to develop a deep neural network that classifies videos.
 We have settled on two main approaches, discussed below: 3-dimensional convolutional neural networks (3D-CNNs) and recurrent neural networks that incorporate long short-term memory (LSTM).  
@@ -55,7 +54,7 @@ We propose to begin with a well-established data set such as UCF-101~\cite{ucf10
 %What specific experiments are you planning on conducting? How are they testing the specific problem you want to solve?
 For training we plan to use the Jinx cluster at Georgia Tech. Each node is equipped with 2 nVidia Tesla M2090 ``Fermi'' GPU cards, and CPU nodes with large memory are available.
 
-The following is a set of experiments that we may perform, given enough time:
+The following is a set of proposed experiments, some of which we have started:
 \begin{itemize}
 \item Move 2D-LSTM within convolution layers to see if this better incorporates spatial information.
 \item Incorporate slow fusion within a 2D-CNN to see if this input approach yields higher accuracy.
@@ -64,19 +63,24 @@ The following is a set of experiments that we may perform, given enough time:
 \item Using CNN + LSTM as base line compare with the performance from CNN + CNN.
 
 \end{itemize}
-We may experiment with different strategies in normalization and augmentation, given enough time.
+We may experiment with different strategies in data normalization and augmentation, given enough time.
 
 \subsection*{Tasks to complete (members)}
 %Below are several tasks to be completed as we moving forward... Please describe as much as you can. We will deal with the page length later. 
 
-\subsubsection*{data preparation by optical flow (Casey)}
+\subsubsection*{Data preparation and optical flow (Casey)}
+For early experimentation we have settled on an initial subset of the UCF-101 data set. This subset, `UCF-11,' contains video clips that correspond to only 11 actions. Using the FFMPEG library for Torch, we read these videos in frame-by-frame. These are then passed to the various CNN ImageNet models under consideration.
+
+An additional step, which could be considered data augmentation, is the preparation of optical flow frames. Our initial code for producing these frames is the MATLAB code provided by Black, et al. which implements the top-rated algorithms as of 2010~\cite{5539939}. Unfortunately, with serial MATLAB execution on a CPU, this can take as long as 30 seconds per frame to generate. Thus, we are moving towards using the OpenCV library, which can use a GPU to estimate optical flow in near real-time. 
+
+To be completed: GPU optical flow generation saved as an mpeg alongside the original UCF videos. Scripts for further data augmentation. 
 
 \subsubsection*{Build CNN as the spatial encoder (Min-Hung Chen, Hao Yan)}
 %Compare different CNN architectures
 %    Use CNN to extract feature vectors from both UCF11, UCF101
-Before we encoder the temporal information into the final features, we need to encode spatial information first. In this task, we chose the 'Network-In-Network'~\cite{nin} model as the CNN architecture, and forwarded all the frames to CNN to obtain feature vectors for these frames. Currently we used the database UCF-11 for the primary experiment. There were 11 classes and 100 videos for each class, and we only selected the first 57 frames (The shortest video has 57 frames). We extracted the features from the layer right before the last linear layer in the NIN network, which have 1024 dimension. Therefore, the final feature dimension for each video will be 1024 x 57, and we will forward the features to the next network to encode the temporal information.
+Before we encode the temporal information into the final features, we must encode spatial information. For this task, we choose the 'Network-In-Network'~\cite{nin} model as the CNN architecture, and forward all of the frames to a CNN to obtain feature vectors for these frames. For our initial experiment we use the UCF-11 data set, containing 11 classes and 100 videos for each class. We only select the first 57 frames (which is the number of frames in the shortest video). We extract the features from the layer right before the last linear layer in the NIN network, which have dimension 1024. Therefore, the final feature dimension for each video is $1024 \times 57$. The features generated by this network can then be forwarded to the next network (which can be one of several candidates) to encode the temporal information.
 
-To be complete: Compare different CNN architectures. Select lower frame rates instead of using all the adjacent frames and compare the results. Generate features from a more complicated database UCF-101.
+To be completed: Compare different CNN architectures. Select lower frame rates instead of using all the adjacent frames and compare the results. Generate features from the larger UCF-101 data set.
 
 \subsubsection*{RNN with LSTM as one temporal encoder (Chih-Yao Ma)}
 In this specific task, we aim to implement a RNN with LSTM as the baseline for performance comparison. This RNN is implemented from scratch using \href{https://github.com/Element-Research/rnn}{rnn library} provided by Element-Research. In this RNN, the user can specify if he/she prefer to use linear layer, LSTM, or even GRU layers. By initializing the number of hidden size for each layers, one can create arbitrary stacked layers, i.e. stacked LSTMs by ${'4096, 800, 200'}$. The user can also design how the learning rate decay through the training process by using command line arguments. 
@@ -91,16 +95,21 @@ To be complete: design CNN architectures using 1D and 2D convolution kernels as 
 
 \subsection*{Group Tasking}
 %A plan of breaking up the project (who will do what). Note that all team members must make a meaningful/significant contribution (i.e. not just do the reporting/posters).
-The following is a tentative list of tasks. As we move closer to our experiments the list will undoubtedly grow. 
+The following is a tentative list of tasks. As we move closer to completion the list will undoubtedly grow. 
 \begin{itemize}
-\item Proposal writing - Min-Hung Chen, Hao, Casey
-\item Proposal presentation - Chih-Yao Ma
-\item Mid-term project report writing- Chih-Yao Ma, Min-Hung Chen, Hao, Casey
-\item Mid-term project presentation- Chih-Yao Ma
-\item Read and understand papers on 2D-LSTM - Everyone
+\item Proposal writing - Min-Hung Chen, Hao, Casey \qquad \textbf{complete}
+\item Proposal presentation - Chih-Yao Ma \qquad \textbf{complete}
+\item Mid-term project report writing- Chih-Yao Ma, Min-Hung Chen, Hao, Casey \qquad \textbf{complete}
+\item Mid-term project presentation- Chih-Yao Ma \qquad \textbf{complete}
+\item Read and understand papers on 2D-LSTM - Everyone \qquad \textbf{complete}
 %\item Read and understand caffe code that implements 2D-CNN and LSTM.
-\item Implement the temporal encoder with LSTM: Chih-Yao Ma
+\item Preparation of UCF data (incl. optical flow) - Casey \qquad \textbf{complete}
+\item Implement the temporal encoder with LSTM: Chih-Yao Ma \qquad \textbf{mostly complete}
+\item Prepare optical flow / augmentation for entire data set - Casey
 \item Implement the spatial and temporal encoder with CNN: Min-Hung Chen, Hao
-\item Preparation of UCF data (incl. optical flow) - Casey
+\item Perform experiments using the LSTM methodology - \dots
+\item Perform experiments using the CNN methodology - \dots
+\item Write final project report - Everyone
+\item Create final project presentation - \dots
 \end{itemize}
 

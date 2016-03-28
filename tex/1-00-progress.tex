@@ -1,15 +1,14 @@
 \subsection*{Motivation}
 %What problem are you trying to solve? Why is this hard right now?
-Deep convolutional neural networks are a leading technique for image classification.
-However, \emph{video} classification is less developed.
+While deep convolutional neural networks are a leading technique for image classification, \emph{video} classification is not as developed.
 While it is certainly possible to simply run a neural network on each individual frame of a video, this sacrifices a wealth of temporal attributes such as movement, gestures, gait, etc.
 There are indeed methods of preprocessing temporal information into a single 2-dimensional input~\cite{brox}, but a more attractive research goal is to develop a neural network that can discover temporal relationships on its own.
 There are multiple recent approaches towards this goal, but as of yet no consensus on which is superior.
 
-The difficulties in training neural networks on video input include the following: memory requirements (particularly if 3D convolutions are used), fewer public data sets, size of the data sets (for instance, the Sports-1M data set is $\approx 4TB$ large), and lack of consensus on which approach is most effective. 
+The difficulties in training neural networks on video input include the following: memory requirements (particularly if 3D convolutions are used), fewer public data sets, size of the data sets (for instance, the Sports-1M data set is $\approx 4TB$ large), and lack of consensus on which structural approaches are most effective. 
 
 Our goal is to develop a deep neural network that classifies videos.
-We have settled on two main approaches, discussed below: 3-dimensional convolutional neural networks (3D-CNNs) and recurrent neural networks that incorporate long short-term memory (LSTM).  
+We have settled on two main approaches for modeling the temporal information, discussed below: convolutional neural networks (3D-CNNs or CNN as temporal encoder) and recurrent neural networks that incorporate long short-term memory (LSTM).  
 
 \subsection*{Related Work}
 %What has been done in similar fields/problems? What are the limitations of current approaches?
@@ -18,21 +17,23 @@ We have settled on two main approaches, discussed below: 3-dimensional convoluti
 One popular approach is to apply a 2D-CNN to each frame of the video, followed by an RNN with LSTM~\cite{ltrcn}. 
 Another approach is slow-fusion, which applies multiple frames to the input at the same time~\cite{cnnvid}. This approach, applied to a simply CNN, shows only a modest improvement over CNN single-frame learning.
 Tran, et al. demonstrated that using 3D-CNNs instead of 2D can achieve state-of-the-art results on several data sets~\cite{stf}.
-Ng, et al. demonstrate that instead of training on `short snippets' (such as in~\cite{cnnvid,stf}), an LSTM approach allows us to train on entire videos efficiently~\cite{snip}, and achieves state-of-the-art performance on several data sets.
+Ng, et al. demonstrate that instead of training on `short snippets' (such as in~\cite{cnnvid,stf}), an LSTM approach allows us to train on entire videos efficiently~\cite{snip}, and achieves state-of-the-art performance on several data sets. Furthermore, Hu, et al \cite{cnnMNLS} demonstrate in natural language processing that instead of using another RNN (or LSTM), CNN can also be used as temporal encoder to extract sequence of information from sentenses. 
 
 Many of these papers incorporate additional features such as optical flow~\cite{brox} and improved dense trajectory, both of which involve optimization techniques applied to subsets of frames. 
 \subsection*{Approach and Techniques}
 %What is your proposed approach to solving the problem? How does it compare to existing approaches?
 %Note: It's OK for these projects to be similar to existing approaches, although if you want to publish the results they will have to have some novelty.
 We have decided on combining two possible approaches, which address
-the third, temporal dimension in different ways: 3D Convolutional Neural
-Networks (3D-CNNs)~\cite{stf,cnnvid} and Multi-Dimensional Long
-Short-Term Memory (LSTM)/Recurrent Neural Networks (RNNs)~\cite{ltrcn}. 
+the third, temporal dimension in different ways: Convolutional Neural
+Networks (3D-CNNs or CNN as temporal encoder)~\cite{stf,cnnvid,cnnMNLS} and Long
+Short-Term Memory /Recurrent Neural Networks (Regular or Multi-dimensional LSTM)~\cite{ltrcn}. 
 
 % 3D-CNNs
 Using a 3D-CNN, it is possible to build a classifier on a moving window
 of frames using 3D convolutions to extract useful local movement information. However, 3D-CNNs introduce a massive memory blowup that may make training infeasible on GPUs.
 To address this, we would like to use the slow-fusion model~\cite{cnnvid} instead of 3D kernels. In addition, we also plan to apply 3D kernels to one or two layers to check the improvement if we don't meet the memory problem. On the other hand, an LSTM/RNN approach is able to build the classifier with long term memory using a much larger number of frames at once. Combining a slow-fusion CNN with LSTM would combine the local movement information with long-term memory, with possible gains in learning.
+
+
 % LSTM
 Furthermore, the current LSTM model is built on the fully-connected
 layer, which does not conserve spatial information. We would like to examine the 
@@ -43,6 +44,9 @@ this challenge, we would like to apply the multi-dimensional LSTM
 \cite{byeon2015scene} to efficiently take advantage of the spatial
 information following an early convolution layer. 
 
+% CNN + CNN (1D convolution) ==> Yan
+Other than the LSTM model for the temporal encoder, convolutional architecture(CNN) has also been applied to model sentences using a pre-trained embedding of words ~\cite{cnnSC,cnnMNLS}. We would like to implement this idea into the video classification. First, a pre-trained CNN architecture can be applied as spatial encoder to each frame to extract features. Furthermore, 1D or 2D CNN can be applied as the temporal encoder. For 1D CNN, we take 1D convolution on a sliding window of the concatenated feature vectors from the spatial decoder. For 2D CNN, we apply 2D convolution and 2D max-pooling directly on the a sliding window of the feature matrix from the spatial encoder. 
+
 \subsection*{Data Set}
 We propose to begin with a well-established data set such as UCF-101~\cite{ucf101}, which contains 13320 videos from 101 action categories. For early training purposes we may use only a small subset of these actions, such as a subset of 10 sports. The ultimate goal is applying our framework to Sports-1M~\cite{cnnvid}, which contains around 1 million Youtube videos belonging to 487 categories. In this way, we can compare our methods with the current state-of-the-art methods.
 
@@ -50,34 +54,63 @@ We propose to begin with a well-established data set such as UCF-101~\cite{ucf10
 %What specific experiments are you planning on conducting? How are they testing the specific problem you want to solve?
 For training we plan to use the Jinx cluster at Georgia Tech. Each node is equipped with 2 nVidia Tesla M2090 ``Fermi'' GPU cards, and CPU nodes with large memory are available.
 
-The following is a set of experiments that we may perform, given enough time:
+The following is a set of proposed experiments, some of which we have started:
 \begin{itemize}
 \item Move 2D-LSTM within convolution layers to see if this better incorporates spatial information.
 \item Incorporate slow fusion within a 2D-CNN to see if this input approach yields higher accuracy.
 \item Replace a 2D-CNN-LSTM network with a Shallow ResNet-LSTM network (with or without slow fusion)-- to see if ResNet provides significant gains over the AlexNet used by existing studies.
 \item Study if slow-fusion \emph{combined} with optical-flow input provides significantly better results than either approach on its own.
+\item Using CNN + LSTM as base line compare with the performance from CNN + 1D-CNN/2D-CNN.
+
 \end{itemize}
-We may experiment with different strategies in normalization and augmentation, given enough time.
+We may experiment with different strategies in data normalization and augmentation, given enough time.
 
 \subsection*{Tasks to complete (members)}
 %Below are several tasks to be completed as we moving forward... Please describe as much as you can. We will deal with the page length later. 
 
-\subsubsection*{RNN with LSTM as decoder (Chih-Yao Ma)}
-In this specific task, we aim to implement a RNN with LSTM as the baseline for performance comparision. This RNN is implemented from scratch using \href{https://github.com/Element-Research/rnn}{rnn library} provided by Element-Research. In this RNN, the user can specify if he/she prefer to use linear layer, LSTM, or even GRU layers. By initializing the number of hiddensize for each layers, one can create arbitary stacked layers, i.e. stacked LSTMs by ${'4096, 800, 200'}$. The user can also design how the learning rate decay through the training process by using commmand line arguments. 
+\subsubsection*{Data preparation and optical flow (Casey)}
+For early experimentation we have settled on an initial subset of the UCF-101 data set. This subset, `UCF-11,' contains video clips that correspond to only 11 actions. Using the FFMPEG library for Torch, we read these videos in frame-by-frame. These are then passed to the various CNN ImageNet models under consideration.
+
+An additional step, which could be considered data augmentation, is the preparation of optical flow frames. Our initial code for producing these frames is the MATLAB code provided by Black, et al. which implements the top-rated algorithms as of 2010~\cite{5539939}. Unfortunately, with serial MATLAB execution on a CPU, this can take as long as 30 seconds per frame to generate. Thus, we are moving towards using the OpenCV library, which can use a GPU to estimate optical flow in near real-time. 
+
+To be completed: GPU optical flow generation saved as an mpeg alongside the original UCF videos. Scripts for further data augmentation. 
+
+\subsubsection*{Build CNN as the spatial encoder (Min-Hung Chen, Hao Yan)}
+%Compare different CNN architectures
+%    Use CNN to extract feature vectors from both UCF11, UCF101
+Before we encode the temporal information into the final features, we must encode spatial information. For this task, we choose the 'Network-In-Network'~\cite{nin} model as the CNN architecture, and forward all of the frames to a CNN to obtain feature vectors for these frames. For our initial experiment we use the UCF-11 data set, containing 11 classes and 100 videos for each class. We only select the first 57 frames (which is the number of frames in the shortest video). We extract the features from the layer right before the last linear layer in the NIN network, which have dimension 1024. Therefore, the final feature dimension for each video is $1024 \times 57$. The features generated by this network can then be forwarded to the next network (which can be one of several candidates) to encode the temporal information.
+
+To be completed: Compare different CNN architectures. Select lower frame rates instead of using all the adjacent frames and compare the results. Generate features from the larger UCF-101 data set.
+
+\subsubsection*{RNN with LSTM as one temporal encoder (Chih-Yao Ma)}
+In this specific task, we aim to implement a RNN with LSTM as the baseline for performance comparison. This RNN is implemented from scratch using \href{https://github.com/Element-Research/rnn}{rnn library} provided by Element-Research. In this RNN, the user can specify if he/she prefer to use linear layer, LSTM, or even GRU layers. By initializing the number of hidden size for each layers, one can create arbitrary stacked layers, i.e. stacked LSTMs by ${'4096, 800, 200'}$. The user can also design how the learning rate decay through the training process by using command line arguments. 
 
 To be complete: Implement CUDA usage, cross-validation, and take feature vectors extracted from CNN and experiment how different parameters and architectures affect training performance. 
 
+\subsubsection*{CNN as another temporal encoder (Min-Hung Chen)}
+%     refer to language model using CNN as decoder, regular 2D kernel, 1D-kernel against time-domain, CUDA usage, LearningRate, architectures design
+According to the success of modeling languages using CNN architectures~\cite{cnnSC,cnnMNLS}, we plan to model the temporal information across different frames using CNN architectures as well, and compare the performance and results with the previous RNN architecture. We plan to design the network based on the language models~\cite{cnnSC,cnnMNLS}, and compare the results between 1D and 2D convolution. 
+
+To be complete: design CNN architectures using 1D and 2D convolution kernels as temporal encoders. Test different parameters for learning. Implement the CUDA version of the encoder for acceleration.
 
 \subsection*{Group Tasking}
 %A plan of breaking up the project (who will do what). Note that all team members must make a meaningful/significant contribution (i.e. not just do the reporting/posters).
-The following is a tentative list of tasks. As we move closer to our experiments the list will undoubtedly grow. 
+The following is a tentative list of tasks. As we move closer to completion the list will undoubtedly grow. 
 \begin{itemize}
-\item Proposal writing - Steve, Hao, Casey
-\item Proposal presentation - Yao
-\item Read and understand papers on 2D-LSTM - Everyone
+\item Proposal writing - Min-Hung Chen, Hao, Casey \qquad \textbf{complete}
+\item Proposal presentation - Chih-Yao Ma \qquad \textbf{complete}
+\item Mid-term project report writing- Chih-Yao Ma, Min-Hung Chen, Hao, Casey \qquad \textbf{complete}
+\item Mid-term project presentation- Chih-Yao Ma \qquad \textbf{complete}
+\item Read and understand papers on 2D-LSTM - Everyone \qquad \textbf{complete}
 %\item Read and understand caffe code that implements 2D-CNN and LSTM.
-\item Implement LSTM: Yao, Casey
-\item Implement CNN: Steve, Hao
-\item Preparation of UCF data (incl. optical flow) - Casey
+\item Preparation of UCF data (incl. optical flow) - Casey \qquad \textbf{complete}
+\item Implement the temporal encoder with LSTM: Chih-Yao Ma \qquad \textbf{mostly complete}
+\item Prepare optical flow / augmentation for entire data set - Casey  \textbf{to be completed}
+\item Implement the spatial and temporal encoder with CNN: Min-Hung Chen, Hao \textbf{to be completed}
+\item Perform experiments using the LSTM methodology - Chih-Yao Ma, Casey \textbf{to be completed}
+\item Perform experiments using the CNN methodology - Min-Hung Chen, Hao \textbf{to be completed}
+	
+\item Write final project report - Everyone \textbf{to be completed}
+\item Create final project presentation - Everyone \textbf{to be completed}
 \end{itemize}
 

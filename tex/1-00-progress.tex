@@ -18,7 +18,7 @@ We have settled on two main approaches, discussed below: 3-dimensional convoluti
 One popular approach is to apply a 2D-CNN to each frame of the video, followed by an RNN with LSTM~\cite{ltrcn}. 
 Another approach is slow-fusion, which applies multiple frames to the input at the same time~\cite{cnnvid}. This approach, applied to a simply CNN, shows only a modest improvement over CNN single-frame learning.
 Tran, et al. demonstrated that using 3D-CNNs instead of 2D can achieve state-of-the-art results on several data sets~\cite{stf}.
-Ng, et al. demonstrate that instead of training on `short snippets' (such as in~\cite{cnnvid,stf}), an LSTM approach allows us to train on entire videos efficiently~\cite{snip}, and achieves state-of-the-art performance on several data sets.
+Ng, et al. demonstrate that instead of training on `short snippets' (such as in~\cite{cnnvid,stf}), an LSTM approach allows us to train on entire videos efficiently~\cite{snip}, and achieves state-of-the-art performance on several data sets. Furthermore, Hu, et al \cite{cnnMNLS} demonstrate in natural language processing that instead of using another RNN (or LSTM), CNN can also be used as temporal encoder to extract sequence of information from sentenses. 
 
 Many of these papers incorporate additional features such as optical flow~\cite{brox} and improved dense trajectory, both of which involve optimization techniques applied to subsets of frames. 
 \subsection*{Approach and Techniques}

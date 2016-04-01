@@ -181,14 +181,13 @@ for c=1, numClass do
   ------ Data paths ------
   local dirClass = dirDatabase..nameClass[c+2]..'/' -- need to +2, since the first two are '.' & '..'
   local nameGroup = paths.dir(dirClass)
-
   timerClass = torch.Timer() -- count the processing time for one class
-
+  print(dirClass)
   for g=1, numGroup do
     ------ Data paths ------
     local dirGroup = dirClass..nameGroup[g+3]..'/' -- need to +2, since the first three are '.' & '..' & 'Annotation'
     local nameSubVideo = paths.dir(dirGroup)
-
+    print(dirGroup)
     for sv=1, numSubVideo do
       --------------------
       -- Load the video --
@@ -200,8 +199,8 @@ for c=1, numClass do
 
       local videoName = nameSubVideo[sv+2]
       local videoPath = dirGroup..videoName
-
-      --print('==> Loading the video: '..videoName)
+      print(nameSubVideo[3])
+      print('==> Loading the video: '..videoName)
       -- TODO --
       -- now:     fixed frame rate
       -- future:  fixed frame #

@@ -74,32 +74,37 @@ nClass = 11 -- UCF11 has 11 categories
 
 ds = {}
 -- TODO: ds.size should correspondes to the number of samples(frames) 
-ds.size = 1000
-ds.FeatureDims = 4096 -- initial the dimension of feature vector
+ds.size = 1100
+ds.FeatureDims = 1024 -- initial the dimension of feature vector
 
+F = torch.load('feat_label_UCF11.t7')
+ds.input = F.featMats
+ds.target = F.labels
+
+if (false) then
 -- input dimension = ds.size x ds.FeatureDims x opt.rho = 1000 x 4096
-if not (opt.featFile == '') then
-   -- read feature file from command line
-   print(' - - Reading external feature file . . .')
-   file = torch.DiskFile(opt.featFile, 'r')
-   ds.input = file:readObject()
-else
-   -- generate random feature file
-   print(c.red .. ' - - No --featFile specified. Generating random feature matrix . . . ' .. c.white)
-   ds.input = torch.randn(ds.size, ds.FeatureDims, opt.rho)
-end
+   if not (opt.featFile == '') then
+      -- read feature file from command line
+      print(' - - Reading external feature file . . .')
+      file = torch.DiskFile(opt.featFile, 'r')
+      ds.input = file:readObject()
+   else
+      -- generate random feature file
+      print(c.red .. ' - - No --featFile specified. Generating random feature matrix . . . ' .. c.white)
+      ds.input = torch.randn(ds.size, ds.FeatureDims, opt.rho)
+   end
 
--- target dimension = ds.size x 1 = 1000 x 1
-if not (opt.targFile == '') then
-   -- read feature file from command line
-   print(' - - Reading external target file . . .')
-   file = torch.DiskFile(opt.targFile, 'r')
-   ds.target = file:readObject()
-else
-   print(c.red .. ' - - No --targFile specified. Generating random target vector . . . ' .. c.white)
-   ds.target = torch.DoubleTensor(ds.size):random(nClass)
+   -- target dimension = ds.size x 1 = 1000 x 1
+   if not (opt.targFile == '') then
+      -- read feature file from command line
+      print(' - - Reading external target file . . .')
+      file = torch.DiskFile(opt.targFile, 'r')
+      ds.target = file:readObject()
+   else
+      print(c.red .. ' - - No --targFile specified. Generating random target vector . . . ' .. c.white)
+      ds.target = torch.DoubleTensor(ds.size):random(nClass)
+   end
 end
-
 ------------------------------------------------------------
 -- Model 
 ------------------------------------------------------------

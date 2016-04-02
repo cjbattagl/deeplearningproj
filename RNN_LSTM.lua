@@ -120,8 +120,24 @@ if (false) then
    end
 end
 
+------------------------------------------------------------
+-- n-fold cross-validation
+------------------------------------------------------------
 
-
+nFolds = 5
+-- shuffle the dataset
+shuffle = torch.randperm(ds.size)
+Index = torch.ceil(ds.size/nFolds)
+-- extract test data
+TestIndices = shuffle:sub(1,Index)
+Test_ind = torch.LongTensor():resize(TestIndices:size()):copy(TestIndices)
+TestData = ds.input:index(1,Test_ind)
+TestTarget = ds.target:index(1,Test_ind)
+-- extract train data
+TrainIndices = shuffle:sub(Index+1,ds.size)
+Train_ind = torch.LongTensor():resize(TrainIndices:size()):copy(TrainIndices)
+TrainData = ds.input:index(1,Train_ind)
+TrainTarget = ds.target:index(1,Train_ind)
 
 
 ------------------------------------------------------------
@@ -237,7 +253,7 @@ end
 -- Initialization before training
 ------------------------------------------------------------
 -- Initialize the input and target tensors
-local inputs = torch.Tensor(opt.batchSize, ds.input:size(2), ds.input:size(3))
+local inputs = torch.Tensor(opt.batchSize, TrainData:size(2), TrainData:size(3))
 local targets = torch.Tensor(opt.batchSize)
 
 if opt.cuda == true then
@@ -281,31 +297,31 @@ for iteration = 1, opt.maxEpoch do
    local time = sys.clock()
 
    -- shuffle at each epoch
-   local shuffle = torch.randperm(ds.size)
+   local shuffle = torch.randperm(TrainData:size(1))
 
    -- do one epoch
    print(sys.COLORS.green .. '==> doing epoch on training data:') 
    print("==> online epoch # " .. iteration .. ' [batchSize = ' .. opt.batchSize .. ']')
 
-   for t = 1,ds.size,opt.batchSize do
+   for t = 1,TrainData:size(1),opt.batchSize do
 
 
       if opt.progress == true then
          -- disp progress
-         xlua.progress(t, ds.size)
+         xlua.progress(t, TrainData:size(1))
       end
       collectgarbage()
 
       -- batch fits?
-      if (t + opt.batchSize - 1) > ds.size then
+      if (t + opt.batchSize - 1) > TrainData:size(1) then
          break
       end
 
       -- create mini batch
       local idx = 1
       for i = t,t+opt.batchSize-1 do
-         inputs[idx] = ds.input[shuffle[i]]
-         targets[idx] = ds.target[shuffle[i]]
+         inputs[idx] = TrainData[shuffle[i]]
+         targets[idx] = TrainTarget[shuffle[i]]
          idx = idx + 1
       end
 
@@ -372,7 +388,7 @@ for iteration = 1, opt.maxEpoch do
 
    -- time taken
    time = sys.clock() - time
-   time = time / ds.size
+   time = time / TrainData:size(1)
    print("\n==> time to learn 1 sample = " .. (time*1000) .. 'ms')
 
    -- print confusion matrix

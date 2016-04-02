@@ -244,9 +244,10 @@ end
 -- Initialization before training
 ------------------------------------------------------------
 -- Initialize the input and target tensors
--- local inputs, targets = torch.LongTensor(), torch.LongTensor()
--- local inputs, targets = {}, {}
-local inputs, targets = torch.Tensor(), torch.Tensor()
+local inputs = torch.Tensor(opt.batchSize, ds.input:size(2), ds.input:size(3))
+local targets = torch.Tensor(opt.batchSize)
+
+
 
 local indices = torch.LongTensor(opt.batchSize)
 -- indices:resize(opt.batchSize) -- indices to be used later, so it is resized to batchsize
@@ -286,31 +287,6 @@ for iteration = 1, opt.maxEpoch do
 
    local time = sys.clock()
 
-
-
-   -- [[create a sequence of opt.rho time-steps
-
-
-
-
-
-   ------------------------------------------------------------
-   -- If SplitTable in Sequencer doesn't work, process the input first
-   ------------------------------------------------------------
-   -- Convert tensor to table of tensors
-   -- mlp = nn.SplitTable(3,1)
-   -- inputs = mlp:forward(inputs)
-
-   -- Naive way to convert tensor to table of tensors
-   -- for step = 1, opt.rho do
-   --    -- batch of inputs
-   --    inputs[step] = inputs[step] or ds.input.new()
-   --    -- inputs[step]:index(ds.input:select(3,step), 1, indices)
-   --    inputs[step] = (ds.input:select(3,step))
-   -- end
-
-
-
    -- shuffle at each epoch
    local shuffle = torch.randperm(ds.size)
 
@@ -333,11 +309,12 @@ for iteration = 1, opt.maxEpoch do
       end
 
       -- create mini batch
-      indices:random(1,ds.size) -- choose some random samples for training
-      inputs:index(ds.input, 1,indices)
-      targets:index(ds.target, 1,indices)
-
-
+      local idx = 1
+      for i = t,t+opt.batchSize-1 do
+         inputs[idx] = ds.input[shuffle[i]]
+         targets[idx] = ds.target[shuffle[i]]
+         idx = idx + 1
+      end
 
       --------------------------------------------------------
       -- My defined training and update process

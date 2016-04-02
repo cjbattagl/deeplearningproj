@@ -290,9 +290,9 @@ for iteration = 1, opt.maxEpoch do
 
    -- [[create a sequence of opt.rho time-steps
 
-   -- indices:random(1,ds.size) -- choose some random samples for training
-   -- inputs:index(ds.input, 1,indices)
-   -- targets:index(ds.target, 1,indices)
+
+
+
 
    ------------------------------------------------------------
    -- If SplitTable in Sequencer doesn't work, process the input first
@@ -321,7 +321,7 @@ for iteration = 1, opt.maxEpoch do
    for t = 1,ds.size,opt.batchSize do
 
 
-      if opt.progress = true then
+      if opt.progress == true then
          -- disp progress
          xlua.progress(t, ds.size)
       end
@@ -333,12 +333,10 @@ for iteration = 1, opt.maxEpoch do
       end
 
       -- create mini batch
-      local idx = 1
-      for i = t,t+opt.batchSize-1 do
-         inputs[idx] = ds.input[shuffle[i]]
-         targets[idx] = ds.target[shuffle[i]]
-         idx = idx + 1
-      end
+      indices:random(1,ds.size) -- choose some random samples for training
+      inputs:index(ds.input, 1,indices)
+      targets:index(ds.target, 1,indices)
+
 
 
       --------------------------------------------------------

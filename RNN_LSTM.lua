@@ -16,6 +16,9 @@
 require 'dp'
 require 'rnn'
 require 'sys'
+require 'xlua'    -- xlua provides useful tools, like progress bars
+require 'optim'
+
 version = 1
 c = sys.COLORS
 
@@ -38,7 +41,7 @@ cmd:option('--cuda', false, 'use CUDA')
 cmd:option('--useDevice', 1, 'sets the device (GPU) to use')
 cmd:option('--maxEpoch', 1000, 'maximum number of epochs to run')
 cmd:option('--maxTries', 50, 'maximum number of epochs to try to find a better local minima for early-stopping')
-cmd:option('--progress', false, 'print progress bar')
+cmd:option('--progress', true, 'print progress bar')
 cmd:option('--silent', false, 'don\'t print anything to stdout')
 cmd:option('--uniform', 0.1, 'initialize parameters using uniform distribution between -uniform and uniform. -1 means default initialization')
 
@@ -46,7 +49,7 @@ cmd:option('--uniform', 0.1, 'initialize parameters using uniform distribution b
 cmd:option('--lstm', true, 'use Long Short Term Memory (nn.LSTM instead of nn.Recurrent)')
 cmd:option('--gru', false, 'use Gated Recurrent Units (nn.GRU instead of nn.Recurrent)')
 cmd:option('--rho', 5, 'back-propagate through time (BPTT) for opt.rho time-steps')
-cmd:option('--hiddenSize', '{4096, 800, 200}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
+cmd:option('--hiddenSize', '{1024, 100}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
 cmd:option('--zeroFirst', false, 'first step will forward zero through recurrence (i.e. add bias of recurrence). As opposed to learning bias specifically for first step.')
 cmd:option('--dropout', false, 'apply dropout after each recurrent layer')
 cmd:option('--dropoutProb', 0.5, 'probability of zeroing a neuron (dropout probability)')
@@ -57,6 +60,8 @@ cmd:option('--validEpochSize', -1, 'number of valid examples used for early stop
 
 cmd:option('--featFile', '', 'file of feature vectors')
 cmd:option('--targFile', '', 'file of target vector')
+dname,fname = sys.fpath()
+cmd:option('-save', fname:gsub('.lua',''), 'subdirectory to save/log experiments in')
 
 cmd:text()
 opt = cmd:parse(arg or {})
@@ -65,6 +70,13 @@ if not opt.silent then
    table.print(opt)
 end
 
+-- type:
+if opt.cuda == true then
+   print(sys.COLORS.red ..  '==> switching to CUDA')
+   require 'cunn'
+   cutorch.setDevice(opt.devid)
+   print(sys.COLORS.red ..  '==> using GPU #' .. cutorch.getDevice())
+end
 
 ------------------------------------------------------------
 -- Data
@@ -76,6 +88,7 @@ ds = {}
 -- TODO: ds.size should correspondes to the number of samples(frames) 
 ds.size = 1100
 ds.FeatureDims = 1024 -- initial the dimension of feature vector
+classes = {'1','2','3','4','5','6','7','8','9','10','11'}
 
 F = torch.load('feat_label_UCF11.t7')
 ds.input = F.featMats
@@ -105,6 +118,11 @@ if (false) then
       ds.target = torch.DoubleTensor(ds.size):random(nClass)
    end
 end
+
+
+
+
+
 ------------------------------------------------------------
 -- Model 
 ------------------------------------------------------------
@@ -210,15 +228,22 @@ end
 
 -- will recurse a single continuous sequence
 vc_rnn:remember((opt.lstm or opt.gru) and 'both' or 'eval')
-
-
-
 print(vc_rnn)
 
+-- build criterion
+criterion = nn.ClassNLLCriterion()
+
+
+if opt.cuda == true then
+   vc_rnn:cuda()
+   criterion:cuda()
+end
+
 
 ------------------------------------------------------------
--- Train
+-- Initialization before training
 ------------------------------------------------------------
+-- Initialize the input and target tensors
 -- local inputs, targets = torch.LongTensor(), torch.LongTensor()
 -- local inputs, targets = {}, {}
 local inputs, targets = torch.Tensor(), torch.Tensor()
@@ -226,18 +251,48 @@ local inputs, targets = torch.Tensor(), torch.Tensor()
 local indices = torch.LongTensor(opt.batchSize)
 -- indices:resize(opt.batchSize) -- indices to be used later, so it is resized to batchsize
 
--- build criterion
-criterion = nn.ClassNLLCriterion()
 
+
+
+-- This matrix records the current confusion across classes
+local confusion = optim.ConfusionMatrix(classes)
+
+-- Log results to files
+local trainLogger = optim.Logger(paths.concat(opt.save, 'train.log'))
+
+
+-- Pass learning rate from command line
 opt.learningRate = opt.startLearningRate
+opt.weightDecay = 1e-5
+opt.learningRateDecay = 1e-7
 
+local optimState = {
+   learningRate = opt.learningRate,
+   momentum = opt.momentum,
+   weightDecay = opt.weightDecay,
+   learningRateDecay = opt.learningRateDecay
+}
+
+
+-- Retrieve parameters and gradients:
+-- this extracts and flattens all the trainable parameters of the mode
+-- into a 1-dim vector
+local w,dE_dw = vc_rnn:getParameters()
+
+------------------------------------------------------------
+-- Train
+------------------------------------------------------------
 for iteration = 1, opt.maxEpoch do
+
+   local time = sys.clock()
+
+
+
    -- [[create a sequence of opt.rho time-steps
 
-   indices:random(1,ds.size) -- choose some random samples for training
-   inputs:index(ds.input, 1,indices)
-   targets:index(ds.target, 1,indices)
-
+   -- indices:random(1,ds.size) -- choose some random samples for training
+   -- inputs:index(ds.input, 1,indices)
+   -- targets:index(ds.target, 1,indices)
 
    ------------------------------------------------------------
    -- If SplitTable in Sequencer doesn't work, process the input first
@@ -254,35 +309,121 @@ for iteration = 1, opt.maxEpoch do
    --    inputs[step] = (ds.input:select(3,step))
    -- end
 
-   -- [[forward sequence through vc_rnn
-   
-   vc_rnn:zeroGradParameters() 
-
-   local outputs = vc_rnn:forward(inputs)
-   local err = criterion:forward(outputs, targets)
-   
-   print(string.format("Iteration %d ; NLL err = %f ", iteration, err))
 
 
-   -- backward sequence through vc_rnn (i.e. backprop through time)
-   
-   local gradOutputs = criterion:backward(outputs, targets)
+   -- shuffle at each epoch
+   local shuffle = torch.randperm(ds.size)
 
-   local gradInputs = vc_rnn:backward(inputs, gradOutputs)
-   
-   -- update parameters
-   
-   vc_rnn:updateParameters(opt.learningRate)
+   -- do one epoch
+   print(sys.COLORS.green .. '==> doing epoch on training data:') 
+   print("==> online epoch # " .. iteration .. ' [batchSize = ' .. opt.batchSize .. ']')
 
-   -- learning rate decay
-   opt.learningRate = opt.learningRate + (opt.minLR - opt.startLearningRate)/opt.saturateEpoch
-   opt.learningRate = math.max(opt.minLR, opt.learningRate)
-   if not opt.silent then
-      print("learning rate = ", opt.learningRate)
+   for t = 1,ds.size,opt.batchSize do
+
+
+      if opt.progress = true then
+         -- disp progress
+         xlua.progress(t, ds.size)
+      end
+      collectgarbage()
+
+      -- batch fits?
+      if (t + opt.batchSize - 1) > ds.size then
+         break
+      end
+
+      -- create mini batch
+      local idx = 1
+      for i = t,t+opt.batchSize-1 do
+         inputs[idx] = ds.input[shuffle[i]]
+         targets[idx] = ds.target[shuffle[i]]
+         idx = idx + 1
+      end
+
+
+      --------------------------------------------------------
+      -- My defined training and update process
+      --------------------------------------------------------
+      -- [[forward sequence through vc_rnn
+      -- vc_rnn:zeroGradParameters() 
+
+      -- local outputs = vc_rnn:forward(inputs)
+      -- local err = criterion:forward(outputs, targets)
+      
+      -- print(string.format("Iteration %d ; NLL err = %f ", iteration, err))
+
+
+      -- -- backward sequence through vc_rnn (i.e. backprop through time)
+      -- local gradOutputs = criterion:backward(outputs, targets)
+      -- local gradInputs = vc_rnn:backward(inputs, gradOutputs)
+
+
+      -- -- update confusion
+      -- for i = 1,opt.batchSize do
+      --    confusion:add(outputs[i],targets[i])
+      -- end
+
+
+      -- -- update parameters
+      -- vc_rnn:updateParameters(opt.learningRate)
+
+      -- -- learning rate decay
+      -- opt.learningRate = opt.learningRate + (opt.minLR - opt.startLearningRate)/opt.saturateEpoch
+      -- opt.learningRate = math.max(opt.minLR, opt.learningRate)
+      -- if not opt.silent then
+      --    print("learning rate = ", opt.learningRate)
+      -- end
+
+      --------------------------------------------------------
+      -- Using optim package for training
+      --------------------------------------------------------
+      local eval_E = function(w)
+         -- reset gradients
+         dE_dw:zero()
+
+         -- evaluate function for complete mini batch
+         local outputs = vc_rnn:forward(inputs)
+         local E = criterion:forward(outputs,targets)
+
+         -- estimate df/dW
+         local dE_dy = criterion:backward(outputs,targets)   
+         vc_rnn:backward(inputs,dE_dy)
+
+         -- update confusion
+         for i = 1,opt.batchSize do
+            confusion:add(outputs[i],targets[i])
+         end
+
+         -- return f and df/dX
+         return E,dE_dw
+      end
+
+      -- optimize on current mini-batch
+      optim.sgd(eval_E, w, optimState)
+
+
    end
 
+
+
+
+   -- time taken
+   time = sys.clock() - time
+   time = time / ds.size
+   print("\n==> time to learn 1 sample = " .. (time*1000) .. 'ms')
+
+   -- print confusion matrix
+   print(confusion)
+
+   -- update logger/plot
+   trainLogger:add{['% mean class accuracy (train set)'] = confusion.totalValid * 100}
+   if opt.plot then
+      trainLogger:style{['% mean class accuracy (train set)'] = '-'}
+      trainLogger:plot()
+   end
+   -- next epoch
+   confusion:zero()
    -- empty 'inputs' tensor
-   -- TODO: collectgarbage(?)
    inputs = torch.Tensor()
 
 end

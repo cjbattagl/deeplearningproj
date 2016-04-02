@@ -22,7 +22,6 @@ require 'optim'
 version = 1
 c = sys.COLORS
 
-
 --[[command line arguments]]--
 cmd = torch.CmdLine()
 cmd:text()
@@ -32,12 +31,14 @@ cmd:text("recurrent-language-model.lua --cuda --useDevice 2 --progress --zeroFir
 cmd:text('Options:')
 cmd:option('--startLearningRate', 0.05, 'learning rate at t=0')
 cmd:option('--minLR', 0.00001, 'minimum learning rate')
+cmd:option('--learningRateDecay', 1e-7, 'learningRateDecay')
 cmd:option('--saturateEpoch', 400, 'epoch at which linear decayed LR will reach minLR')
 cmd:option('--momentum', 0.9, 'momentum')
+cmd:option('--weightDecay', 1e-5, 'weightDecay')
 cmd:option('--maxOutNorm', -1, 'max l2-norm of each layer\'s output neuron weights')
 cmd:option('--cutoffNorm', -1, 'max l2-norm of concatenation of all gradParam tensors')
 cmd:option('--batchSize', 8, 'number of examples per batch') -- how many examples per training 
-cmd:option('--cuda', false, 'use CUDA')
+cmd:option('--cuda', true, 'use CUDA')
 cmd:option('--useDevice', 1, 'sets the device (GPU) to use')
 cmd:option('--maxEpoch', 1000, 'maximum number of epochs to run')
 cmd:option('--maxTries', 50, 'maximum number of epochs to try to find a better local minima for early-stopping')
@@ -74,7 +75,7 @@ end
 if opt.cuda == true then
    print(sys.COLORS.red ..  '==> switching to CUDA')
    require 'cunn'
-   cutorch.setDevice(opt.devid)
+   cutorch.setDevice(opt.useDevice)
    print(sys.COLORS.red ..  '==> using GPU #' .. cutorch.getDevice())
 end
 
@@ -195,8 +196,7 @@ end
 
 
 
--- input layer (i.e. word embedding space)
-
+-- input layer 
 -- vc_rnn:insert(nn.SplitTable(1,2), 1) -- tensor to table of tensors
  vc_rnn:insert(nn.SplitTable(3,1), 1) -- tensor to table of tensors
 
@@ -204,14 +204,7 @@ if opt.dropout then
    vc_rnn:insert(nn.Dropout(opt.dropoutProb), 1)
 end
 
--- TODO: LookupTable can only take 1D or 2D input 
--- lookup = nn.LookupTable(nClass, opt.hiddenSize[1])
--- lookup.maxOutNorm = -1 -- disable maxParamNorm on the lookup table
--- vc_rnn:insert(lookup, 1)
-
-
 -- output layer
-
 vc_rnn:add(nn.SelectTable(-1)) -- this selects the last time-step of the rnn output sequence
 vc_rnn:add(nn.Linear(inputSize, nClass))
 vc_rnn:add(nn.LogSoftMax())
@@ -247,12 +240,14 @@ end
 local inputs = torch.Tensor(opt.batchSize, ds.input:size(2), ds.input:size(3))
 local targets = torch.Tensor(opt.batchSize)
 
+if opt.cuda == true then
+   inputs = inputs:cuda()
+   targets = targets:cuda()
+end
 
 
 local indices = torch.LongTensor(opt.batchSize)
 -- indices:resize(opt.batchSize) -- indices to be used later, so it is resized to batchsize
-
-
 
 
 -- This matrix records the current confusion across classes
@@ -264,8 +259,6 @@ local trainLogger = optim.Logger(paths.concat(opt.save, 'train.log'))
 
 -- Pass learning rate from command line
 opt.learningRate = opt.startLearningRate
-opt.weightDecay = 1e-5
-opt.learningRateDecay = 1e-7
 
 local optimState = {
    learningRate = opt.learningRate,
@@ -375,12 +368,7 @@ for iteration = 1, opt.maxEpoch do
 
       -- optimize on current mini-batch
       optim.sgd(eval_E, w, optimState)
-
-
    end
-
-
-
 
    -- time taken
    time = sys.clock() - time
@@ -398,8 +386,6 @@ for iteration = 1, opt.maxEpoch do
    end
    -- next epoch
    confusion:zero()
-   -- empty 'inputs' tensor
-   inputs = torch.Tensor()
 
 end
 

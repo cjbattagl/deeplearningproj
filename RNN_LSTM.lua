@@ -49,7 +49,7 @@ cmd:option('--uniform', 0.1, 'initialize parameters using uniform distribution b
 cmd:option('--lstm', true, 'use Long Short Term Memory (nn.LSTM instead of nn.Recurrent)')
 cmd:option('--gru', false, 'use Gated Recurrent Units (nn.GRU instead of nn.Recurrent)')
 cmd:option('--rho', 10, 'number of frames for each video')
-cmd:option('--hiddenSize', '{1024, 512, 128}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
+cmd:option('--hiddenSize', '{1024, 512, 256, 128}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
 cmd:option('--zeroFirst', false, 'first step will forward zero through recurrence (i.e. add bias of recurrence). As opposed to learning bias specifically for first step.')
 cmd:option('--dropout', true, 'apply dropout after each recurrent layer')
 cmd:option('--dropoutProb', 0.5, 'probability of zeroing a neuron (dropout probability)')
@@ -62,6 +62,8 @@ cmd:option('--featFile', '', 'file of feature vectors')
 cmd:option('--targFile', '', 'file of target vector')
 dname,fname = sys.fpath()
 cmd:option('-save', fname:gsub('.lua',''), 'subdirectory to save/log experiments in')
+cmd:option('--plot', true, 'Plot the training and testing accuracy')
+
 
 cmd:text()
 opt = cmd:parse(arg or {})
@@ -123,16 +125,16 @@ end
 -- Only use a certain number of frames from each video
 ------------------------------------------------------------
 function ExtractFrames(InputData, rho)
-   
+   print(sys.COLORS.green ..  '==> Training on only ' .. rho .. ' frames per video')
    local TimeStep = InputData:size(3) / rho
-   local DataInput = torch.Tensor(InputData:size(1), InputData:size(2), rho)
+   local DataOutput = torch.Tensor(InputData:size(1), InputData:size(2), rho)
 
    local idx = 1
    for j = 1,InputData:size(3),TimeStep do
-      DataInput[{{},{},idx}] = InputData[{{},{},j}]
+      DataOutput[{{},{},idx}] = InputData[{{},{},j}]
       idx = idx + 1
    end
-   return DataInput
+   return DataOutput
 end
 
 ------------------------------------------------------------
@@ -140,6 +142,8 @@ end
 -- this is only use a certain amount of data for training, and the rest of data for testing
 ------------------------------------------------------------
 function CrossValidation(Dataset, Target, nFolds)
+   print(sys.COLORS.green ..  '==> Train on ' .. (1-1/nFolds)*100 .. '% of data ..')
+   print(sys.COLORS.green ..  '==> Test on ' .. 100/nFolds .. '% of data ..')
    -- shuffle the dataset
    local shuffle = torch.randperm(Dataset:size(1))
    local Index = torch.ceil(Dataset:size(1)/nFolds)
@@ -289,7 +293,7 @@ local confusion = optim.ConfusionMatrix(classes)
 
 -- Log results to files
 local trainLogger = optim.Logger(paths.concat(opt.save, 'train.log'))
-
+local testLogger = optim.Logger(paths.concat(opt.save, 'test.log'))
 
 -- Pass learning rate from command line
 opt.learningRate = opt.startLearningRate
@@ -308,80 +312,16 @@ local optimState = {
 local w,dE_dw = vc_rnn:getParameters()
 
 ------------------------------------------------------------
--- Test function
+-- Train function
 ------------------------------------------------------------
-function test(TestData, TestTarget, model)
-
-	-- local vars
-  	local time = sys.clock()
-	-- This matrix records the current confusion across classes
-	local confusion = optim.ConfusionMatrix(classes) 
-	-- Logger
-	local testLogger = optim.Logger(paths.concat(opt.save, 'test.log'))
-
-   -- test over test data
-   print(sys.COLORS.red .. '==> testing on test set:')
-
-   for t = 1,TestData:size(1),opt.batchSize do
-      -- disp progress
-      xlua.progress(t, TestData:size(1))
-
-      -- batch fits?
-      if (t + opt.batchSize - 1) > TestData:size(1) then
-      	break
-      end
-
-      -- create mini batch
-      local idx = 1
-      for i = t,t+opt.batchSize-1 do
-      	inputs[idx] = TestData[i]
-      	targets[idx] = TestTarget[i]
-      	idx = idx + 1
-      end
-
-      -- test sample
-      local preds = model:forward(inputs)
-
-      -- confusion
-      for i = 1,opt.batchSize do
-      	confusion:add(preds[i], targets[i])
-      end
-  end
-
-   -- timing
-   time = sys.clock() - time
-   time = time / TestData:size(1)
-   print("\n==> time to test 1 sample = " .. (time*1000) .. 'ms')
-
-   -- print confusion matrix
-   print(confusion)
-
-   -- update log/plot
-   testLogger:add{['% mean class accuracy (test set)'] = confusion.totalValid * 100}
-   if opt.plot then
-   	testLogger:style{['% mean class accuracy (test set)'] = '-'}
-   	testLogger:plot()
-   end
-   confusion:zero()
-   
-end
-
-------------------------------------------------------------
--- Train
-------------------------------------------------------------
-for iteration = 1, opt.maxEpoch do
+function train(TrainData, TrainTarget, model)
 
    local time = sys.clock()
 
    -- shuffle at each epoch
    local shuffle = torch.randperm(TrainData:size(1))
 
-   -- do one epoch
-   print(sys.COLORS.green .. '==> doing epoch on training data:') 
-   print("==> online epoch # " .. iteration .. ' [batchSize = ' .. opt.batchSize .. ']')
-
    for t = 1,TrainData:size(1),opt.batchSize do
-
 
       if opt.progress == true then
          -- disp progress
@@ -479,7 +419,82 @@ for iteration = 1, opt.maxEpoch do
    end
    -- next epoch
    confusion:zero()
+end
 
+------------------------------------------------------------
+-- Test function
+------------------------------------------------------------
+function test(TestData, TestTarget, model)
+
+   -- local vars
+	local time = sys.clock()
+   -- This matrix records the current confusion across classes
+   -- local confusion = optim.ConfusionMatrix(classes)  
+
+   -- test over test data
+   print(sys.COLORS.red .. '==> testing on test set:')
+
+   for t = 1,TestData:size(1),opt.batchSize do
+      -- disp progress
+      xlua.progress(t, TestData:size(1))
+
+      -- batch fits?
+      if (t + opt.batchSize - 1) > TestData:size(1) then
+      	break
+      end
+
+      -- create mini batch
+      local idx = 1
+      for i = t,t+opt.batchSize-1 do
+      	inputs[idx] = TestData[i]
+      	targets[idx] = TestTarget[i]
+      	idx = idx + 1
+      end
+
+      -- test sample
+      local preds = model:forward(inputs)
+
+      -- confusion
+      for i = 1,opt.batchSize do
+      	confusion:add(preds[i], targets[i])
+      end
+   end
+
+   -- timing
+   time = sys.clock() - time
+   time = time / TestData:size(1)
+   print("\n==> time to test 1 sample = " .. (time*1000) .. 'ms')
+
+   -- print confusion matrix
+   print(confusion)
+
+   -- update log/plot
+   testLogger:add{['% mean class accuracy (test set)'] = confusion.totalValid * 100}
+   if opt.plot then
+   	testLogger:style{['% mean class accuracy (test set)'] = '-'}
+   	testLogger:plot()
+   end
+   confusion:zero()
+   
+end
+
+
+
+
+
+------------------------------------------------------------
+-- Run
+------------------------------------------------------------
+for iteration = 1, opt.maxEpoch do
+
+   -- do one epoch
+   print(sys.COLORS.green .. '==> doing epoch on training data:') 
+   print("==> online epoch # " .. iteration .. ' [batchSize = ' .. opt.batchSize .. ']')
+
+   -- Begin training process
+   train(TrainData, TrainTarget, vc_rnn)
+
+   -- Begin testing with trained model
 	test(TestData, TestTarget, vc_rnn)
 
 end

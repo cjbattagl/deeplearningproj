@@ -20,7 +20,6 @@ require 'xlua'    -- xlua provides useful tools, like progress bars
 require 'optim'
 
 version = 1
-c = sys.COLORS
 
 --[[command line arguments]]--
 cmd = torch.CmdLine()
@@ -96,7 +95,7 @@ ds.input = F.featMats
 ds.target = F.labels
 
 if (false) then
--- input dimension = ds.size x ds.FeatureDims x opt.rho = 1000 x 4096
+-- input dimension = ds.size x ds.FeatureDims x opt.rho = 1100 x 1024 x time
    if not (opt.featFile == '') then
       -- read feature file from command line
       print(' - - Reading external feature file . . .')
@@ -108,7 +107,7 @@ if (false) then
       ds.input = torch.randn(ds.size, ds.FeatureDims, opt.rho)
    end
 
-   -- target dimension = ds.size x 1 = 1000 x 1
+   -- target dimension = ds.size x 1 = 1100 x 1
    if not (opt.targFile == '') then
       -- read feature file from command line
       print(' - - Reading external target file . . .')
@@ -208,7 +207,7 @@ end
 -- :add(nn.LogSoftMax())
 
 -- vc_rnn = nn.Sequencer(vc_rnn)
-
+------------------------------------------------------------
 
 
 
@@ -224,10 +223,6 @@ end
 vc_rnn:add(nn.SelectTable(-1)) -- this selects the last time-step of the rnn output sequence
 vc_rnn:add(nn.Linear(inputSize, nClass))
 vc_rnn:add(nn.LogSoftMax())
-
--- vc_rnn:add(nn.Sequencer(nn.SelectTable(-1))) -- this selects the last time-step of the rnn output sequence
--- vc_rnn:add(nn.Sequencer(nn.Linear(inputSize, nClass)))
--- vc_rnn:add(nn.Sequencer(nn.LogSoftMax()))
 
 if opt.uniform > 0 then
    for k,param in ipairs(vc_rnn:parameters()) do
@@ -261,10 +256,8 @@ if opt.cuda == true then
    targets = targets:cuda()
 end
 
-
+-- indices to be used later, so it is resized to batchsize
 local indices = torch.LongTensor(opt.batchSize)
--- indices:resize(opt.batchSize) -- indices to be used later, so it is resized to batchsize
-
 
 -- This matrix records the current confusion across classes
 local confusion = optim.ConfusionMatrix(classes)
@@ -288,6 +281,65 @@ local optimState = {
 -- this extracts and flattens all the trainable parameters of the mode
 -- into a 1-dim vector
 local w,dE_dw = vc_rnn:getParameters()
+
+------------------------------------------------------------
+-- Test function
+------------------------------------------------------------
+function test(TestData, TestTarget, model)
+
+	-- local vars
+  	local time = sys.clock()
+	-- This matrix records the current confusion across classes
+	local confusion = optim.ConfusionMatrix(classes) 
+	-- Logger
+	local testLogger = optim.Logger(paths.concat(opt.save, 'test.log'))
+
+   -- test over test data
+   print(sys.COLORS.red .. '==> testing on test set:')
+
+   for t = 1,TestData:size(1),opt.batchSize do
+      -- disp progress
+      xlua.progress(t, TestData:size(1))
+
+      -- batch fits?
+      if (t + opt.batchSize - 1) > TestData:size(1) then
+      	break
+      end
+
+      -- create mini batch
+      local idx = 1
+      for i = t,t+opt.batchSize-1 do
+      	inputs[idx] = TestData[i]
+      	targets[idx] = TestTarget[i]
+      	idx = idx + 1
+      end
+
+      -- test sample
+      local preds = model:forward(inputs)
+
+      -- confusion
+      for i = 1,opt.batchSize do
+      	confusion:add(preds[i], targets[i])
+      end
+  end
+
+   -- timing
+   time = sys.clock() - time
+   time = time / TestData:size(1)
+   print("\n==> time to test 1 sample = " .. (time*1000) .. 'ms')
+
+   -- print confusion matrix
+   print(confusion)
+
+   -- update log/plot
+   testLogger:add{['% mean class accuracy (test set)'] = confusion.totalValid * 100}
+   if opt.plot then
+   	testLogger:style{['% mean class accuracy (test set)'] = '-'}
+   	testLogger:plot()
+   end
+   confusion:zero()
+   
+end
 
 ------------------------------------------------------------
 -- Train
@@ -403,7 +455,12 @@ for iteration = 1, opt.maxEpoch do
    -- next epoch
    confusion:zero()
 
+	test(TestData, TestTarget, vc_rnn)
+
 end
+
+
+
 
 
 --[[

@@ -48,10 +48,10 @@ cmd:option('--uniform', 0.1, 'initialize parameters using uniform distribution b
 -- recurrent layer 
 cmd:option('--lstm', true, 'use Long Short Term Memory (nn.LSTM instead of nn.Recurrent)')
 cmd:option('--gru', false, 'use Gated Recurrent Units (nn.GRU instead of nn.Recurrent)')
-cmd:option('--rho', 5, 'back-propagate through time (BPTT) for opt.rho time-steps')
-cmd:option('--hiddenSize', '{1024, 100}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
+cmd:option('--rho', 10, 'number of frames for each video')
+cmd:option('--hiddenSize', '{1024, 512, 128}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
 cmd:option('--zeroFirst', false, 'first step will forward zero through recurrence (i.e. add bias of recurrence). As opposed to learning bias specifically for first step.')
-cmd:option('--dropout', false, 'apply dropout after each recurrent layer')
+cmd:option('--dropout', true, 'apply dropout after each recurrent layer')
 cmd:option('--dropoutProb', 0.5, 'probability of zeroing a neuron (dropout probability)')
 
 -- data
@@ -120,24 +120,49 @@ if (false) then
 end
 
 ------------------------------------------------------------
--- n-fold cross-validation
+-- Only use a certain number of frames from each video
 ------------------------------------------------------------
+function ExtractFrames(InputData, rho)
+   
+   local TimeStep = InputData:size(3) / rho
+   local DataInput = torch.Tensor(InputData:size(1), InputData:size(2), rho)
 
-nFolds = 5
--- shuffle the dataset
-shuffle = torch.randperm(ds.size)
-Index = torch.ceil(ds.size/nFolds)
--- extract test data
-TestIndices = shuffle:sub(1,Index)
-Test_ind = torch.LongTensor():resize(TestIndices:size()):copy(TestIndices)
-TestData = ds.input:index(1,Test_ind)
-TestTarget = ds.target:index(1,Test_ind)
--- extract train data
-TrainIndices = shuffle:sub(Index+1,ds.size)
-Train_ind = torch.LongTensor():resize(TrainIndices:size()):copy(TrainIndices)
-TrainData = ds.input:index(1,Train_ind)
-TrainTarget = ds.target:index(1,Train_ind)
+   local idx = 1
+   for j = 1,InputData:size(3),TimeStep do
+      DataInput[{{},{},idx}] = InputData[{{},{},j}]
+      idx = idx + 1
+   end
+   return DataInput
+end
 
+------------------------------------------------------------
+-- n-fold cross-validation function
+-- this is only use a certain amount of data for training, and the rest of data for testing
+------------------------------------------------------------
+function CrossValidation(Dataset, Target, nFolds)
+   -- shuffle the dataset
+   local shuffle = torch.randperm(Dataset:size(1))
+   local Index = torch.ceil(Dataset:size(1)/nFolds)
+   -- extract test data
+   local TestIndices = shuffle:sub(1,Index)
+   local Test_ind = torch.LongTensor():resize(TestIndices:size()):copy(TestIndices)
+   local TestData = Dataset:index(1,Test_ind)
+   local TestTarget = Target:index(1,Test_ind)
+   -- extract train data
+   local TrainIndices = shuffle:sub(Index+1,Dataset:size(1))
+   local Train_ind = torch.LongTensor():resize(TrainIndices:size()):copy(TrainIndices)
+   local TrainData = Dataset:index(1,Train_ind)
+   local TrainTarget = Target:index(1,Train_ind)
+
+   return TrainData, TrainTarget, TestData, TestTarget
+end
+
+
+-- Only use a certain number of frames from each video
+ds.input = ExtractFrames(ds.input, opt.rho)
+
+-- n-fold cross-validation
+TrainData, TrainTarget, TestData, TestTarget = CrossValidation(ds.input, ds.target, 5)
 
 ------------------------------------------------------------
 -- Model 
@@ -458,10 +483,6 @@ for iteration = 1, opt.maxEpoch do
 	test(TestData, TestTarget, vc_rnn)
 
 end
-
-
-
-
 
 --[[
 local answer

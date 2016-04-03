@@ -30,7 +30,7 @@
 
 -- author: Min-Hung Chen
 -- contact: cmhungsteve@gatech.edu
--- Last updated: 03/23/2016
+-- Last updated: 04/01/2016
 
 --#!/usr/bin/env torch
 
@@ -48,6 +48,7 @@ require 'gen_feature'
 ----------------------------------------------
 --         Input/Output information         --
 ----------------------------------------------
+-- select the number of classes, groups & videos you want to use
 numClass = 11
 numGroup = 25
 numSubVideo = 4
@@ -60,7 +61,7 @@ dimFeat = 1024
 dirModel = './models/'
 dirDatabase = '../Dataset/UCF11_updated_mpg/'
 nameClass = paths.dir(dirDatabase) -- nameClass[3] ~ nameClass[13] are the classes we want
---numClass = #nameClass - 2 -- 11 classes
+numClassTotal = #nameClass - 2 -- 11 classes
 
 ----------------------------------------------
 -- 			      User-defined parameters			  --
@@ -110,11 +111,79 @@ op:option{'-pr', '--pred', action='store', dest='pred',
           help='option for prediction', default=false}
 opt,args = op:parse()
 
+-- ----------------------------------------------
+-- --          Extract video parameters        --
+-- ----------------------------------------------
+-- ------ Search for the shortest video ------
+-- numFrameMin = 30000 -- set a really large number
+
+-- for c=1, numClassTotal do
+--   ------ Data paths ------
+--   local dirClass = dirDatabase..nameClass[c+2]..'/' -- need to +2, since the first two are '.' & '..'
+--   local nameGroup = paths.dir(dirClass)
+--   local numGroupTotal = #nameGroup - 3
+
+--   local timerClass = torch.Timer() -- count the processing time for one class
+
+--   local numFrameMinClass = 30000
+
+--   for g=1, numGroupTotal do
+--     ------ Data paths ------
+--     local dirGroup = dirClass..nameGroup[g+3]..'/' -- need to +2, since the first three are '.' & '..' & 'Annotation'
+--     local nameSubVideo = paths.dir(dirGroup)
+--     local numSubVideoTotal = #nameSubVideo - 2
+
+--     for sv=1, numSubVideoTotal do
+--       --------------------
+--       -- Load the video --
+--       --------------------  
+--       local videoName = nameSubVideo[sv+2]
+--       local videoPath = dirGroup..videoName
+
+--       --print('==> Loading the video: '..videoName)
+--       local video = ffmpeg.Video{path=videoPath, width=opt.width, height=opt.height, 
+--                              fps=opt.fps, length=opt.seconds, delete=true, 
+--                              destFolder='out_frames',silent=true}
+
+--       -- --video:play{} -- play the video
+--       local vidTensor = video:totensor{} -- read the whole video & turn it into a 4D tensor
+
+--       ------ Video prarmeters ------
+--       local numFrame  = vidTensor:size(1)
+
+--       if numFrame < numFrameMinClass then
+--         numFrameMinClass = numFrame
+--         --dirMinVideo = dirGroup
+--         --videoMinName = videoName
+--         videoMinPathClass = videoPath
+--       end
+
+--       if numFrame < numFrameMin then
+--         numFrameMin = numFrame
+--         --dirMinVideo = dirGroup
+--         --videoMinName = videoName
+--         videoMinPath = videoPath
+--       end
+
+--         --print(video)
+--     end
+--   end
+
+--   print('The serching time for the class '..nameClass[c+2]..': ' .. timerClass:time().real .. ' seconds')
+--   print('The full path of the shortest video in the class '..nameClass[c+2]..': '..videoMinPathClass)
+--   print('The smallest frame # of the class '..nameClass[c+2]..': '.. numFrameMinClass)
+
+-- end
+
+-- print(' ')
+-- print('The full path of the shortest video in the dataset: '..videoMinPath)
+-- print('The smallest frame #: '.. numFrameMin)
+
 ----------------------------------------------
 --          Extract video parameters        --
 ----------------------------------------------
 dirTestVideo = dirDatabase..'volleyball_spiking/v_spiking_14/'
-videoTestName = 'v_spiking_14_02' -- the shortest video
+videoTestName = 'v_spiking_14_02' -- a short video
 videoTestPath = dirTestVideo..videoTestName..'.mpg'
 videoTest = ffmpeg.Video{path=videoTestPath, width=opt.width, height=opt.height, 
                              fps=opt.fps, length=opt.seconds, delete=true, 
@@ -181,74 +250,82 @@ for c=1, numClass do
   ------ Data paths ------
   local dirClass = dirDatabase..nameClass[c+2]..'/' -- need to +2, since the first two are '.' & '..'
   local nameGroup = paths.dir(dirClass)
-  timerClass = torch.Timer() -- count the processing time for one class
-  print(dirClass)
-  for g=1, numGroup do
+  local numGroupTotal = #nameGroup - 3
+
+  local timerClass = torch.Timer() -- count the processing time for one class
+
+  for g=1, numGroupTotal do
     ------ Data paths ------
     local dirGroup = dirClass..nameGroup[g+3]..'/' -- need to +2, since the first three are '.' & '..' & 'Annotation'
     local nameSubVideo = paths.dir(dirGroup)
-    print(dirGroup)
-    for sv=1, numSubVideo do
+    local numSubVideoTotal = #nameSubVideo - 2
+    local countSubVideo = 0 -- we only select 4 videos, so we need to count the video #
+
+    for sv=1, numSubVideoTotal do
       --------------------
       -- Load the video --
       --------------------  
+      if countSubVideo < numSubVideo then
+        -- TODO --
+        -- now:     choose the first 4 videos
+        -- future:  probably randomly choose 4 videos
 
-      -- TODO --
-      -- now:     choose the first 4 videos
-      -- future:  probably randomly choose 4 videos
+        local videoName = nameSubVideo[sv+2]
+        local videoPath = dirGroup..videoName
 
-      local videoName = nameSubVideo[sv+2]
-      local videoPath = dirGroup..videoName
-      print(nameSubVideo[3])
-      print('==> Loading the video: '..videoName)
-      -- TODO --
-      -- now:     fixed frame rate
-      -- future:  fixed frame #
+        --print('==> Loading the video: '..videoName)
+        -- TODO --
+        -- now:     fixed frame rate
+        -- future:  fixed frame #
 
-      local video = ffmpeg.Video{path=videoPath, width=opt.width, height=opt.height, 
-                             fps=opt.fps, length=opt.seconds, delete=true, 
-                             destFolder='out_frames',silent=true}
+        local video = ffmpeg.Video{path=videoPath, width=opt.width, height=opt.height, 
+                               fps=opt.fps, length=opt.seconds, delete=true, 
+                               destFolder='out_frames',silent=true}
 
-      countVideo = countVideo + 1
-      -- --video:play{} -- play the video
-      local vidTensor = video:totensor{} -- read the whole video & turn it into a 4D tensor
+        -- --video:play{} -- play the video
+        local vidTensor = video:totensor{} -- read the whole video & turn it into a 4D tensor
 
-      ------ Video prarmeters ------
-      local numFrame  = vidTensor:size(1)
-      -- local numChn     = vidTensor:size(2)
-      -- local vidHeight  = vidTensor:size(3)
-      -- local vidWidthT  = vidTensor:size(4)
+        ------ Video prarmeters ------
+        local numFrame  = vidTensor:size(1)
+        -- local numChn     = vidTensor:size(2)
+        -- local vidHeight  = vidTensor:size(3)
+        -- local vidWidthT  = vidTensor:size(4)
 
-      if numFrame >= numFrameTest then
-        ----------------------------------------------
-        --           Process with the video         --
-        ----------------------------------------------
-        if opt.pred then
-          print '==> Begin predicting......'
-          for f=1, numFrameTest do
-            local inFrame = vidTensor[f]
-            print('frame '..tostring(f)..': ')
-            classify_video(inFrame, net, synset_words)
-            
+        --if numFrame >= numFrameMin then
+        if numFrame >= numFrameTest then
+        
+          countSubVideo = countSubVideo + 1
+          countVideo = countVideo + 1
+          ----------------------------------------------
+          --           Process with the video         --
+          ----------------------------------------------
+          if opt.pred then
+            print '==> Begin predicting......'
+            for f=1, numFrameTest do
+              local inFrame = vidTensor[f]
+              print('frame '..tostring(f)..': ')
+              classify_video(inFrame, net, synset_words)
+              
+            end
           end
-        end
 
-        if opt.feat then
-          --print '==> Generating the feature matrix......'
-          for f=1, numFrameTest do
-            local inFrame = vidTensor[f]
-            --print('frame '..tostring(f)..'...')
-            local feat = gen_feature(inFrame, net, synset_words)
-            featMats[{{countVideo},{},{f}}] = feat
+          if opt.feat then
+            --print '==> Generating the feature matrix......'
+            for f=1, numFrameTest do
+              local inFrame = vidTensor[f]
+              --print('frame '..tostring(f)..'...')
+              local feat = gen_feature(inFrame, net, synset_words)
+              featMats[{{countVideo},{},{f}}] = feat
+            end
+            labels[countVideo] = c
+
+            print(videoName..' ==> feature dimension: '..
+              '('..tostring(featMats:size(2))..', '..tostring(featMats:size(3))..'), '..
+              'label: '..nameClass[c+2])
           end
-          labels[countVideo] = c
 
-          print(videoName..' ==> feature dimension: '..
-            '('..tostring(featMats:size(2))..', '..tostring(featMats:size(3))..'), '..
-            'label: '..nameClass[c+2])
+          --print(video)
         end
-
-        --print(video)
       end
     end
   end

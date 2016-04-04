@@ -28,7 +28,7 @@ cmd:text('Train a Language Model on PennTreeBank dataset using RNN or LSTM or GR
 cmd:text('Example:')
 cmd:text("recurrent-language-model.lua --cuda --useDevice 2 --progress --zeroFirst --cutoffNorm 4 --opt.rho 10")
 cmd:text('Options:')
-cmd:option('--startLearningRate', 0.05, 'learning rate at t=0')
+cmd:option('--startLearningRate', 1e-2, 'learning rate at t=0')
 cmd:option('--minLR', 0.00001, 'minimum learning rate')
 cmd:option('--learningRateDecay', 1e-7, 'learningRateDecay')
 cmd:option('--saturateEpoch', 400, 'epoch at which linear decayed LR will reach minLR')
@@ -48,7 +48,7 @@ cmd:option('--uniform', 0.1, 'initialize parameters using uniform distribution b
 -- recurrent layer 
 cmd:option('--lstm', true, 'use Long Short Term Memory (nn.LSTM instead of nn.Recurrent)')
 cmd:option('--gru', false, 'use Gated Recurrent Units (nn.GRU instead of nn.Recurrent)')
-cmd:option('--rho', 10, 'number of frames for each video')
+cmd:option('--rho', 15, 'number of frames for each video')
 cmd:option('--hiddenSize', '{1024, 512, 256, 128}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
 cmd:option('--zeroFirst', false, 'first step will forward zero through recurrence (i.e. add bias of recurrence). As opposed to learning bias specifically for first step.')
 cmd:option('--dropout', true, 'apply dropout after each recurrent layer')
@@ -84,15 +84,20 @@ end
 -- Data
 ------------------------------------------------------------
 
-nClass = 11 -- UCF11 has 11 categories
+-- nClass = 11 -- UCF11 has 11 categories
+nClass = 101 -- UCF101 has 101 categories
 
 ds = {}
 -- TODO: ds.size should correspondes to the number of samples(frames) 
 ds.size = 1100
 ds.FeatureDims = 1024 -- initial the dimension of feature vector
-classes = {'1','2','3','4','5','6','7','8','9','10','11'}
 
-F = torch.load('feat_label_UCF11.t7')
+for c = 1, nClass do
+   classes[c] = tostring(c)
+end
+
+-- F = torch.load('feat_label_UCF11.t7')
+F = torch.load('/home/chih-yao/Downloads/feat_label_UCF101.t7')
 ds.input = F.featMats
 ds.target = F.labels
 
@@ -427,9 +432,7 @@ end
 function test(TestData, TestTarget, model)
 
    -- local vars
-	local time = sys.clock()
-   -- This matrix records the current confusion across classes
-   -- local confusion = optim.ConfusionMatrix(classes)  
+	local time = sys.clock() 
 
    -- test over test data
    print(sys.COLORS.red .. '==> testing on test set:')

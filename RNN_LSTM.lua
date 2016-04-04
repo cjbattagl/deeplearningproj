@@ -28,7 +28,7 @@ cmd:text('Train a Language Model on PennTreeBank dataset using RNN or LSTM or GR
 cmd:text('Example:')
 cmd:text("recurrent-language-model.lua --cuda --useDevice 2 --progress --zeroFirst --cutoffNorm 4 --opt.rho 10")
 cmd:text('Options:')
-cmd:option('--startLearningRate', 1e-2, 'learning rate at t=0')
+cmd:option('--startLearningRate', 5e-2, 'learning rate at t=0')
 cmd:option('--minLR', 0.00001, 'minimum learning rate')
 cmd:option('--learningRateDecay', 1e-7, 'learningRateDecay')
 cmd:option('--saturateEpoch', 400, 'epoch at which linear decayed LR will reach minLR')
@@ -87,15 +87,16 @@ end
 -- nClass = 11 -- UCF11 has 11 categories
 nClass = 101 -- UCF101 has 101 categories
 
-ds = {}
--- TODO: ds.size should correspondes to the number of samples(frames) 
-ds.size = 1100
-ds.FeatureDims = 1024 -- initial the dimension of feature vector
-
+-- generate strings for classes
+classes = {}
 for c = 1, nClass do
    classes[c] = tostring(c)
 end
 
+ds = {}
+ds.FeatureDims = 1024 -- initial the dimension of feature vector
+
+-- load saved feature matrix from CNN model
 -- F = torch.load('feat_label_UCF11.t7')
 F = torch.load('/home/chih-yao/Downloads/feat_label_UCF101.t7')
 ds.input = F.featMats
@@ -111,7 +112,7 @@ if (false) then
    else
       -- generate random feature file
       print(c.red .. ' - - No --featFile specified. Generating random feature matrix . . . ' .. c.white)
-      ds.input = torch.randn(ds.size, ds.FeatureDims, opt.rho)
+      ds.input = torch.randn(ds.input:size(1), ds.FeatureDims, opt.rho)
    end
 
    -- target dimension = ds.size x 1 = 1100 x 1
@@ -122,7 +123,7 @@ if (false) then
       ds.target = file:readObject()
    else
       print(c.red .. ' - - No --targFile specified. Generating random target vector . . . ' .. c.white)
-      ds.target = torch.DoubleTensor(ds.size):random(nClass)
+      ds.target = torch.DoubleTensor(ds.input:size(1)):random(nClass)
    end
 end
 

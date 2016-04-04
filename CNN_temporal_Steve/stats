@@ -1,0 +1,16 @@
+80% training, 20% testing:
+1. 
+Setting:
+1st CNN feature: NIN (1024-dim)
+frame#: 48
+nstates = {32,64,256}
+convsize = {3, 5}
+convstep = {1, 1}
+convpad  = {(convsize[1]-1)/2, (convsize[2]-1)/2} ==> not change the conv. output dim.
+poolsize = {4, 2}
+poolstep = {4, 2} ==> pool. output dim. = input dim./poolsize
+
+Results: (45 epochs)
+training: 100
+testing: 83.591
+

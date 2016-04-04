@@ -48,7 +48,7 @@ cmd:option('--uniform', 0.1, 'initialize parameters using uniform distribution b
 -- recurrent layer 
 cmd:option('--lstm', true, 'use Long Short Term Memory (nn.LSTM instead of nn.Recurrent)')
 cmd:option('--gru', false, 'use Gated Recurrent Units (nn.GRU instead of nn.Recurrent)')
-cmd:option('--rho', 15, 'number of frames for each video')
+cmd:option('--rho', 48, 'number of frames for each video')
 cmd:option('--hiddenSize', '{1024, 512, 256, 128}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
 cmd:option('--zeroFirst', false, 'first step will forward zero through recurrence (i.e. add bias of recurrence). As opposed to learning bias specifically for first step.')
 cmd:option('--dropout', true, 'apply dropout after each recurrent layer')
@@ -94,6 +94,7 @@ for c = 1, nClass do
 end
 
 ds = {}
+ds.size = 1100
 ds.FeatureDims = 1024 -- initial the dimension of feature vector
 
 -- load saved feature matrix from CNN model
@@ -131,7 +132,7 @@ end
 -- Only use a certain number of frames from each video
 ------------------------------------------------------------
 function ExtractFrames(InputData, rho)
-   print(sys.COLORS.green ..  '==> Training on only ' .. rho .. ' frames per video')
+   print(sys.COLORS.green ..  '==> Extracting only ' .. rho .. ' frames per video')
    local TimeStep = InputData:size(3) / rho
    local DataOutput = torch.Tensor(InputData:size(1), InputData:size(2), rho)
 
@@ -140,6 +141,25 @@ function ExtractFrames(InputData, rho)
       DataOutput[{{},{},idx}] = InputData[{{},{},j}]
       idx = idx + 1
    end
+   return DataOutput
+end
+
+------------------------------------------------------------
+-- Only use a certain number of consecutive frames from each video
+------------------------------------------------------------
+function ExtractConsecutiveFrames(InputData, rho)
+   print(sys.COLORS.green ..  '==> Extracting random ' .. rho .. ' consecutive frames per video')
+
+   local DataOutput = torch.Tensor(InputData:size(1), InputData:size(2), rho)
+   local nProb = InputData:size(3) - rho
+   local ind_start = torch.Tensor(1):random(1,nProb)
+   
+   local Index = torch.range(ind_start[1], ind_start[1]+rho-1)
+   local IndLong = torch.LongTensor():resize(Index:size()):copy(Index)
+
+   -- extracting data according to the Index
+   local DataOutput = InputData:index(3,IndLong)
+
    return DataOutput
 end
 
@@ -168,8 +188,9 @@ function CrossValidation(Dataset, Target, nFolds)
 end
 
 
--- Only use a certain number of frames from each video
-ds.input = ExtractFrames(ds.input, opt.rho)
+-- Only use a certain number of (consecutive) frames from each video
+-- ds.input = ExtractFrames(ds.input, opt.rho)
+ds.input = ExtractConsecutiveFrames(ds.input, opt.rho)
 
 -- n-fold cross-validation
 TrainData, TrainTarget, TestData, TestTarget = CrossValidation(ds.input, ds.target, 5)

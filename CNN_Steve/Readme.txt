@@ -15,7 +15,7 @@ It will do the following steps:
 run_UCF11.lua:
 Load all the videos in UCF-11  
 
-command: qlua run_UCF11.lua (-v your_video)
+command: qlua run_UCF11.lua
 
 notes:
 1. You need to put all the videos in the folder '../Dataset/.....'
@@ -26,6 +26,23 @@ notes:
 	total video# = 11*25*4 = 1100
 	feature dimension = 1024
 	frame# = 57 (I chose the shortest video)
+3. There are two kinds of outputs: featMats & labels
+	featMats: 	total video# x feature dimension x frame#
+	labels:		total video# x 1
+=============================================================================
+run_UCF101.lua:
+Load most of the videos in UCF-101 (recommend to use CUDA)
+
+command: qlua run_UCF101.lua -p cuda
+
+notes:
+1. You need to downoload the dataset and modify the path in the code
+2. parameters: 
+	class# = 101
+	video# in each group = 90 (because there are at least 100 videos)
+	total video# = 101*90 = 9090
+	feature dimension = 1024
+	frame# = 57 (I chose from one short video)
 3. There are two kinds of outputs: featMats & labels
 	featMats: 	total video# x feature dimension x frame#
 	labels:		total video# x 1

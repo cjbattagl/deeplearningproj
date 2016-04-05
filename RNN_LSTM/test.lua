@@ -81,8 +81,8 @@ function test(testData)
 	time = time / TestData:size(1)
 	print("\n==> time to test 1 sample = " .. (time*1000) .. 'ms')
 
-	-- print confusion matrix
-	print(confusion)
+  	-- print confusion matrix
+  	print(confusion)
 
 	-- update log/plot
 	testLogger:add{['% mean class accuracy (test set)'] = confusion.totalValid * 100}

@@ -10,4 +10,4 @@ TODO:
 
 
 
-#### Contact: Chih-Yao Ma at <cyma@gatech.edu>
+#### Contact: [Chih-Yao Ma](http://shallowdown.wix.com/chih-yao-ma) at <cyma@gatech.edu>

@@ -33,8 +33,8 @@ cmd:option('--momentum', 0.9, 'momentum')
 cmd:option('--weightDecay', 1e-5, 'weightDecay')
 cmd:option('--maxOutNorm', -1, 'max l2-norm of each layer\'s output neuron weights')
 cmd:option('--cutoffNorm', -1, 'max l2-norm of concatenation of all gradParam tensors')
-cmd:option('--batchSize', 8, 'number of examples per batch') -- how many examples per training 
-cmd:option('--cuda', false, 'use CUDA')
+cmd:option('--batchSize', 32, 'number of examples per batch') -- how many examples per training 
+cmd:option('--cuda', true, 'use CUDA')
 cmd:option('--useDevice', 1, 'sets the device (GPU) to use')
 cmd:option('--maxEpoch', 1000, 'maximum number of epochs to run')
 cmd:option('--maxTries', 50, 'maximum number of epochs to try to find a better local minima for early-stopping')
@@ -45,7 +45,7 @@ cmd:option('--uniform', 0.1, 'initialize parameters using uniform distribution b
 -- recurrent layer 
 cmd:option('--lstm', true, 'use Long Short Term Memory (nn.LSTM instead of nn.Recurrent)')
 cmd:option('--gru', false, 'use Gated Recurrent Units (nn.GRU instead of nn.Recurrent)')
-cmd:option('--rho', 8, 'number of frames for each video')
+cmd:option('--rho', 36, 'number of frames for each video')
 cmd:option('--hiddenSize', '{1024, 512, 256, 128}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
 cmd:option('--zeroFirst', false, 'first step will forward zero through recurrence (i.e. add bias of recurrence). As opposed to learning bias specifically for first step.')
 cmd:option('--dropout', true, 'apply dropout after each recurrent layer')
@@ -61,9 +61,15 @@ dname,fname = sys.fpath()
 cmd:option('-save', fname:gsub('.lua',''), 'subdirectory to save/log experiments in')
 cmd:option('--plot', true, 'Plot the training and testing accuracy')
 
-
 cmd:text()
 opt = cmd:parse(arg or {})
+
+opt.rundir = cmd:string(fname:gsub('.lua',''), opt, {dir=true})
+paths.mkdir(opt.rundir)
+
+-- create log file
+cmd:log(opt.rundir .. '/log', opt)
+
 opt.hiddenSize = dp.returnString(opt.hiddenSize)
 if not opt.silent then
    table.print(opt)

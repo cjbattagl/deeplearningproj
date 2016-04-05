@@ -134,8 +134,8 @@ end
 
 
 -- Only use a certain number of (consecutive) frames from each video
--- ds.input = ExtractFrames(ds.input, opt.rho)
-ds.input = ExtractConsecutiveFrames(ds.input, opt.rho)
+ds.input = ExtractFrames(ds.input, opt.rho)
+-- ds.input = ExtractConsecutiveFrames(ds.input, opt.rho)
 
 -- n-fold cross-validation
 TrainData, TrainTarget, TestData, TestTarget = CrossValidation(ds.input, ds.target, 5)

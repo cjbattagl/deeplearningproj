@@ -22,6 +22,7 @@ nClass = 101 -- UCF101 has 101 categories
 -- for c = 1, nClass do
 --    classes[c] = tostring(c)
 -- end
+
 -- classes in UCF-101
 classes = {
 "BoxingSpeedBag", "Surfing", "FloorGymnastics", "IceDancing", "Lunges", "Swing", "SkyDiving", "MilitaryParade", "PlayingPiano", "Punch",

@@ -285,6 +285,7 @@ else
 			          	--print(video)
 			        end
 		      	end
+		      	collectgarbage()
 		    end
 		    out = {}
 		    out.featMats = featMats

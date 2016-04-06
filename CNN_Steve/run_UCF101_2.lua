@@ -1,10 +1,10 @@
 -- Georgia Institute of Technology 
 -- CS8803DL Spring 2016 (Instructor: Zsolt Kira)
--- Final Project: Video Classification
+-- Final Project: Deep Learning for Video Classification
 
 -- Load one video & generate a feature matrix for this video
 -- Select all the videos which have the frame numbers at least "numFrameMin"
--- No need to 
+-- No need to specify the video number
 
 -- ffmpeg usage:
 -- Video{

@@ -1,3 +1,23 @@
+run_UCF101_final.lua:
+Load most of the videos in UCF-101 (use CUDA for default)
+no need to specify the video number ==> use all the videos above the user-defined minimal frame#
+follow the original author's split sets to generate 3 training/testing sets
+
+command: th run_UCF101_final.lua 
+
+notes:
+1. You need to downoload the dataset and modify the path in the code
+2. parameters: 
+	class# = 101
+	feature dimension = 1024
+	frame# = 50 (I chose from one short video)
+3. There are two kinds of outputs (featMats & labels) & three numbers
+	featMats: 	total video# x feature dimension x frame#
+	labels:		total video# x 1
+	numVideo:	depend on training or testing sets
+	numClass:	101
+	c_finished:	103 (no need to care...just a flag^^)
+=============================================================================
 run_UCF101_2.lua:
 Load most of the videos in UCF-101 (use CUDA for default)
 no need to specify the video number ==> use all the videos above the user-defined minimal frame#
@@ -10,9 +30,12 @@ notes:
 	class# = 101
 	feature dimension = 1024
 	frame# = 50 (I chose from one short video)
-3. There are two kinds of outputs: featMats & labels
+3. There are two kinds of outputs (featMats & labels) & three numbers
 	featMats: 	total video# x feature dimension x frame#
 	labels:		total video# x 1
+	numVideo:	13308
+	numClass:	101
+	c_finished:	103 (no need to care...just a flag^^)
 =============================================================================
 run_UCF101.lua:
 Load most of the videos in UCF-101 (recommend to use CUDA)

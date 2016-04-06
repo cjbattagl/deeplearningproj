@@ -20,6 +20,32 @@ require 'sys'
 
 print(sys.COLORS.red ..  '==> construct RNN')
 
+
+--[[
+----------------------------------------------------------
+--if only using simple Sequencer
+----------------------------------------------------------
+rnn = nn.Recurrent(
+opt.hiddenSize[1], -- size of output
+nn.Linear(ds.FeatureDims, opt.hiddenSize[1]), -- input layer
+nn.Linear(opt.hiddenSize[1], opt.hiddenSize[1]), -- recurrent layer
+nn.Sigmoid(), -- transfer function
+opt.rho
+)
+
+model = nn.Sequential()
+-- model:insert(nn.SplitTable(3,1), 1) -- tensor to table of tensors, which can't not be used in 'nn.Sequencer'
+-- model:add(rnn)
+:add(nn.FastLSTM(ds.FeatureDims, opt.hiddenSize[1]))
+:add(nn.FastLSTM(opt.hiddenSize[1], opt.hiddenSize[2]))
+:add(nn.Linear(opt.hiddenSize[2], nClass))
+:add(nn.LogSoftMax())
+
+model = nn.Sequencer(model)
+----------------------------------------------------------
+]]
+
+
 -- Video Classification model
 model = nn.Sequential()
 
@@ -64,32 +90,8 @@ for i,hiddenSize in ipairs(opt.hiddenSize) do
    inputSize = hiddenSize
 end
 
-------------------------------------------------------------
--- if only using simple Sequencer
-------------------------------------------------------------
--- rnn = nn.Recurrent(
--- opt.hiddenSize[1], -- size of output
--- nn.Linear(ds.FeatureDims, opt.hiddenSize[1]), -- input layer
--- nn.Linear(opt.hiddenSize[1], opt.hiddenSize[1]), -- recurrent layer
--- nn.Sigmoid(), -- transfer function
--- opt.rho
--- )
-
--- model = nn.Sequential()
--- -- model:insert(nn.SplitTable(3,1), 1) -- tensor to table of tensors, which can't not be used in 'nn.Sequencer'
--- -- model:add(rnn)
--- :add(nn.FastLSTM(ds.FeatureDims, opt.hiddenSize[1]))
--- :add(nn.FastLSTM(opt.hiddenSize[1], opt.hiddenSize[2]))
--- :add(nn.Linear(opt.hiddenSize[2], nClass))
--- :add(nn.LogSoftMax())
-
--- model = nn.Sequencer(model)
-------------------------------------------------------------
-
-
 -- input layer 
--- model:insert(nn.SplitTable(1,2), 1) -- tensor to table of tensors
- model:insert(nn.SplitTable(3,1), 1) -- tensor to table of tensors
+model:insert(nn.SplitTable(3,1), 1) -- tensor to table of tensors
 
 if opt.dropout then
    model:insert(nn.Dropout(opt.dropoutProb), 1)

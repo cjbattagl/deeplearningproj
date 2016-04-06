@@ -84,6 +84,11 @@ function test(testData)
   	-- print confusion matrix
   	print(confusion)
 
+	if confusion.totalValid * 100 >= bestAcc then
+		bestAcc = confusion.totalValid * 100
+	end
+	print(sys.COLORS.red .. '==> Best testing accuracy = ' .. bestAcc .. '%')
+
 	-- update log/plot
 	testLogger:add{['% mean class accuracy (test set)'] = confusion.totalValid * 100}
 	if opt.plot then

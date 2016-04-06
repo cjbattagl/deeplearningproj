@@ -43,8 +43,6 @@ end
 
 print(sys.COLORS.red ..  '==> configuring optimizer')
 -- Pass learning rate from command line
-opt.learningRate = opt.startLearningRate
-
 local optimState = {
    learningRate = opt.learningRate,
    momentum = opt.momentum,
@@ -71,6 +69,17 @@ function train(TrainData, TrainTarget)
 
    print(sys.COLORS.green .. '==> doing epoch on training data:') 
    print("==> online epoch # " .. epoch .. ' [batchSize = ' .. opt.batchSize .. ']')
+
+   if opt.optimizer == 'adam' or 'adamax' or 'rmsprop' then
+         -- Maybe decay learning rate
+      if epoch % opt.lrDecayEvery == 0 then
+         print(sys.COLORS.yellow ..  '==> Updating learning rate .. ')
+         local old_learningRate = optimState.learningRate
+         optimState = {learningRate = old_learningRate * opt.lrDecayFactor}
+      end
+   end
+
+   print(sys.COLORS.yellow ..  '==> Learning rate is: ' .. optimState.learningRate .. '')
 
    for t = 1,TrainData:size(1),opt.batchSize do
 
@@ -150,8 +159,24 @@ function train(TrainData, TrainTarget)
          return E,dE_dw
       end
 
+
+
       -- optimize on current mini-batch
-      optim.sgd(eval_E, w, optimState)
+      if opt.optimizer == 'sgd' then
+         -- use SGD
+         optim.sgd(eval_E, w, optimState)
+      elseif opt.optimizer == 'adam' then
+         -- use adam
+         optim.adam(eval_E, w, optimState)
+      elseif opt.optimizer == 'adamax' then
+         -- use adamax
+         optim.adamax(eval_E, w, optimState)
+      elseif opt.optimizer == 'rmsprop' then
+         -- use RMSProp
+         optim.rmsprop(eval_E, w, optimState)
+      end
+
+
    end
 
    -- time taken

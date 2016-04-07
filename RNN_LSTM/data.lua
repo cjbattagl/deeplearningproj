@@ -102,8 +102,8 @@ print(sys.COLORS.green .. '==> Reading UCF101 external feature vector and target
 -- load saved feature matrix from CNN model
 local UCF101_list = true
 
-if UCF101_list then 
-   
+if UCF101_list == true then 
+
    -- training and testing data from UCF101 website
    local TrainFeatureLabels = torch.load('/home/chih-yao/Downloads/feat_label_UCF101_train_1.t7')
    TrainData = TrainFeatureLabels.featMats
@@ -112,7 +112,9 @@ if UCF101_list then
 
    local TestFeatureLabels = torch.load('/home/chih-yao/Downloads/feat_label_UCF101_test_1.t7')
    TestData = TestFeatureLabels.featMats
-   TestData = ExtractFrames(TestData, opt.rho)
+   if AveragePred == false then 
+      TestData = ExtractFrames(TestData, opt.rho)
+   end
    TestTarget = TestFeatureLabels.labels
 
 else

@@ -21,19 +21,22 @@ version = 1
 --[[command line arguments]]--
 cmd = torch.CmdLine()
 cmd:text()
-cmd:text('Train a Language Model on PennTreeBank dataset using RNN or LSTM or GRU')
+cmd:text('Train a Model on video classification dataset using RNN with LSTM or GRU')
 cmd:text('Example:')
-cmd:text("recurrent-language-model.lua --cuda --useDevice 2 --progress --zeroFirst --cutoffNorm 4 --opt.rho 10")
+cmd:text("RNN_LSTM.lua --cuda --useDevice 1 --progress --opt.rho 36")
 cmd:text('Options:')
-cmd:option('--startLearningRate', 5e-2, 'learning rate at t=0')
+cmd:option('--learningRate', 5e-4, 'learning rate at t=0')
 cmd:option('--minLR', 0.00001, 'minimum learning rate')
 cmd:option('--learningRateDecay', 1e-7, 'learningRateDecay')
 cmd:option('--saturateEpoch', 400, 'epoch at which linear decayed LR will reach minLR')
 cmd:option('--momentum', 0.9, 'momentum')
 cmd:option('--weightDecay', 1e-5, 'weightDecay')
+cmd:option('--optimizer', 'adam', 'Use different optimizer, e.g. sgd, adam, adamax, rmsprop for now')
+cmd:option('--lrDecayEvery', 5, 'learning rate decay per epochs for optimizer adam')
+cmd:option('--lrDecayFactor', 0.9, 'learning rate decay factor for optimizer adam')
 cmd:option('--maxOutNorm', -1, 'max l2-norm of each layer\'s output neuron weights')
 cmd:option('--cutoffNorm', -1, 'max l2-norm of concatenation of all gradParam tensors')
-cmd:option('--batchSize', 32, 'number of examples per batch') -- how many examples per training 
+cmd:option('--batchSize', 64, 'number of examples per batch') -- how many examples per training 
 cmd:option('--cuda', true, 'use CUDA')
 cmd:option('--useDevice', 1, 'sets the device (GPU) to use')
 cmd:option('--maxEpoch', 1000, 'maximum number of epochs to run')
@@ -46,10 +49,14 @@ cmd:option('--uniform', 0.1, 'initialize parameters using uniform distribution b
 cmd:option('--lstm', true, 'use Long Short Term Memory (nn.LSTM instead of nn.Recurrent)')
 cmd:option('--gru', false, 'use Gated Recurrent Units (nn.GRU instead of nn.Recurrent)')
 cmd:option('--rho', 36, 'number of frames for each video')
-cmd:option('--hiddenSize', '{1024, 512, 256, 128}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
+cmd:option('--inputSize', 1024, 'dimension of the feature vector from CNN')
+cmd:option('--hiddenSize', '{256}', 'number of hidden units used at output of each recurrent layer. When more than one is specified, RNN/LSTMs/GRUs are stacked')
 cmd:option('--zeroFirst', false, 'first step will forward zero through recurrence (i.e. add bias of recurrence). As opposed to learning bias specifically for first step.')
 cmd:option('--dropout', true, 'apply dropout after each recurrent layer')
 cmd:option('--dropoutProb', 0.5, 'probability of zeroing a neuron (dropout probability)')
+
+-- testing process
+cmd:option('--AveragePred', true, 'average the predictions from each time step per video')
 
 -- data
 cmd:option('--trainEpochSize', -1, 'number of train examples seen between each epoch')
@@ -68,7 +75,7 @@ opt.rundir = cmd:string(fname:gsub('.lua',''), opt, {dir=true})
 paths.mkdir(opt.rundir)
 
 -- create log file
-cmd:log(opt.rundir .. '/log', opt)
+cmd:log(opt.rundir .. '/log.txt', opt)
 
 opt.hiddenSize = dp.returnString(opt.hiddenSize)
 if not opt.silent then
@@ -83,7 +90,6 @@ if opt.cuda == true then
    print(sys.COLORS.red ..  '==> using GPU #' .. cutorch.getDevice())
 end
 
-
 ------------------------------------------------------------
 print(sys.COLORS.red ..  '==> load modules')
 
@@ -94,6 +100,9 @@ local test  = require 'test'
 ------------------------------------------------------------
 -- Run
 ------------------------------------------------------------
+-- initialize bestAcc
+bestAcc = 0
+
 print(sys.COLORS.red .. '==> training!')
 
 for iteration = 1, opt.maxEpoch do

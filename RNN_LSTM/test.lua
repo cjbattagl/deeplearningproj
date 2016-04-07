@@ -32,12 +32,18 @@ local confusion = optim.ConfusionMatrix(classes)
 local testLogger = optim.Logger(paths.concat(opt.save,'test.log'))
 
 -- Batch test:
-local inputs = torch.Tensor(opt.batchSize, TrainData:size(2), TrainData:size(3))
+local inputs = torch.Tensor(opt.batchSize, TestData:size(2), TestData:size(3))
 local targets = torch.Tensor(opt.batchSize)
+if AveragePred == true then 
+	predsFrames = torch.Tensor(opt.batchSize, nClass, opt.rho-1)
+end
 
 if opt.cuda == true then
-   inputs = inputs:cuda()
-   targets = targets:cuda()
+	inputs = inputs:cuda()
+	targets = targets:cuda()
+	if AveragePred == true then 
+	   predsFrames = predsFrames:cuda()
+	end
 end
 
 
@@ -51,29 +57,47 @@ function test(testData)
 	print(sys.COLORS.red .. '==> testing on test set:')
 
 	for t = 1,TestData:size(1),opt.batchSize do
-	  -- disp progress
-	  xlua.progress(t, TestData:size(1))
+		-- disp progress
+		xlua.progress(t, TestData:size(1))
 
-	  -- batch fits?
-	  if (t + opt.batchSize - 1) > TestData:size(1) then
-	  	break
-	  end
+		-- batch fits?
+		if (t + opt.batchSize - 1) > TestData:size(1) then
+			break
+		end
 
-	  -- create mini batch
-	  local idx = 1
-	  for i = t,t+opt.batchSize-1 do
-	  	inputs[idx] = TestData[i]
-	  	targets[idx] = TestTarget[i]
-	  	idx = idx + 1
-	  end
+		-- create mini batch
+		local idx = 1
+		for i = t,t+opt.batchSize-1 do
+			inputs[idx] = TestData[i]
+			targets[idx] = TestTarget[i]
+			idx = idx + 1
+		end
 
-	  -- test sample
-	  local preds = model:forward(inputs)
+		if AveragePred == true then 
+			-- make prediction for each of the images frames, start from frame #2
+			idx = 1
+			for i = 2, opt.rho do
+				-- extract various length of frames 
+				local Index = torch.range(1, i)
+				local indLong = torch.LongTensor():resize(Index:size()):copy(Index)
+				local inputsPreFrames = inputs:index(3, indLong)
 
-	  -- confusion
-	  for i = 1,opt.batchSize do
-	  	confusion:add(preds[i], targets[i])
-	  end
+				-- feedforward pass the trained model
+				predsFrames[{{},{},idx}] = model:forward(inputsPreFrames)
+
+				idx = idx + 1
+			end
+			-- average all the prediction across all frames
+			preds = torch.mean(predsFrames, 3):squeeze()
+
+		else
+			-- test sample
+			preds = model:forward(inputs)
+		end
+		-- confusion
+		for i = 1,opt.batchSize do
+		confusion:add(preds[i], targets[i])
+		end
 	end
 
 	-- timing

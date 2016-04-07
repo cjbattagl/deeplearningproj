@@ -1,6 +1,6 @@
 -- Georgia Institute of Technology 
 -- CS8803DL Spring 2016 (Instructor: Zsolt Kira)
--- Final Project: Video Classification
+-- Final Project: Deep Learning for Video Classification
 
 -- Load one video & generate a feature matrix for this video
 
@@ -34,7 +34,7 @@ require 'qt'
 require 'qtwidget'
 require 'imgraph'
 require 'nnx'
-require 'sys'
+
 require 'classify_video'
 require 'gen_feature'
 
@@ -45,7 +45,7 @@ dir_model = './models/'
 dir_database = '../Dataset/UCF11_updated_mpg/'
 dir_class = dir_database..'volleyball_spiking/'
 dir_video = dir_class..'v_spiking_14/'
-c = sys.COLORS
+
 ----------------------------------------------
 -- 			User-defined parameters			--
 ----------------------------------------------
@@ -117,7 +117,6 @@ op:option{'-fe', '--feat', action='store', dest='feat',
           help='option for generating features', default=true}
 op:option{'-pr', '--pred', action='store', dest='pred',
           help='option for prediction', default=false}
-op:option{'-s', '--saveFeat', action='store', dest='saveFeat',help='save feature matrix at path', default='../featMat.txt'}
 opt,args = op:parse()
 
 ----------------------------------------------
@@ -212,13 +211,6 @@ if opt.feat then
 print(featMat:size())
 end
 
---We should have the CNN and LSTM as separate modules, so we can run a single script that integrates them.
---For now, we save the features to a text file to read in later.
-if not (opt.saveFeat == '') then
-  print(c.red .. 'Saving feature matrix at: ' .. c.white)
-  print(c.green .. opt.saveFeat .. c.white)
-  torch.save(opt.saveFeat, featMat,'ascii')
-end
 --print(video)
 
 --classify_video(im, net, synset_words)

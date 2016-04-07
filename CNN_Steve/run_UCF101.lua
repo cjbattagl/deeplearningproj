@@ -1,13 +1,13 @@
 -- Georgia Institute of Technology 
 -- CS8803DL Spring 2016 (Instructor: Zsolt Kira)
--- Final Project: Video Classification
+-- Final Project: Deep Learning for Video Classification
 
 -- Load one video & generate a feature matrix for this video
 
 -- TODO:
 -- 1. frame#: I used the frame# of a short video now. We can also try to fix the frame#
 --            and variable frame rate for different videos.
--- 2. video selection: In each group, I chose the first 80 videos now. We can either randomly 
+-- 2. video selection: In each group, I chose the first 90 videos now. We can either randomly 
 --                     choose 80 videos, or use all the videos.
 
 -- ffmpeg usage:

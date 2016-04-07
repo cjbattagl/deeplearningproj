@@ -1,6 +1,6 @@
 -- Georgia Institute of Technology 
 -- CS8803DL Spring 2016 (Instructor: Zsolt Kira)
--- Final Project: Video Classification		
+-- Final Project: Deep Learning for Video Classification
 
 -- It's a function version: 
 -- 1. read the image from the input
@@ -16,7 +16,7 @@
 
 -- author: Min-Hung Chen
 -- contact: cmhungsteve@gatech.edu
--- Last updated: 03/22/2016
+-- Last updated: 04/03/2016
 
 ----------------------------------------------
 -- 					Functions 				--
@@ -31,7 +31,7 @@ function preprocess(im, img_mean, img_std)
 end
 
 
-function gen_feature(inFrame, net, synset_words)
+function gen_feature(inFrame, net, opt)
 
 --require 'loadcaffe' 
 require 'image'
@@ -60,6 +60,7 @@ local img_std = torch.Tensor({0.22889466674951, 0.22446679341259, 0.224955483447
 --print('ImageNet')
 --print(img_mean, img_std)
 local I = preprocess(im, img_mean, img_std):view(1,3,224,224):float()
+--local I = preprocess(im, img_mean, img_std):view(1,3,224,224):cuda()
 
 ----------------------------------------------
 -- 			 Forward Propagation			--
@@ -70,22 +71,6 @@ local feat = net:forward(I)
 feat:t()
 --print(feat:size())
 return feat
-
--- -- 2. forward to get prediction labels
--- -- -- (1) Top 1 prediction
--- -- -- print 'Propagate through the model, show the best classes'
--- -- --local _,classes = net:forward(I):view(-1):sort(true)
--- -- local _,classes = net:forward(I):view(-1):max(1)
--- --   print('The predicted class is ', synset_words[classes[1] ])
-
--- -- Top 3 predictions
--- -- print 'Propagate through the model, sort outputs in decreasing order and show 3 best classes'
--- local _,classes = net:forward(I):view(-1):sort(true)
--- --_,classes = net:forward(I):sort(true)
--- --print(classes)
--- for i=1,3 do
---   print('predicted class '..tostring(i)..': ', synset_words[classes[i] ])
--- end
 
 
 

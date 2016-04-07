@@ -1,6 +1,6 @@
 -- Georgia Institute of Technology 
 -- CS8803DL Spring 2016 (Instructor: Zsolt Kira)
--- Final Project: Video Classification		
+-- Final Project: Deep Learning for Video Classification
 
 -- It's a function version: 
 -- 1. read the image from the input

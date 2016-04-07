@@ -49,7 +49,9 @@ model = nn.Sequencer(model)
 -- Video Classification model
 model = nn.Sequential()
 
-local inputSize = opt.hiddenSize[1]
+-- local inputSize = opt.hiddenSize[1]
+local inputSize = opt.inputSize
+
 for i,hiddenSize in ipairs(opt.hiddenSize) do 
 
    if i~= 1 and (not opt.lstm) and (not opt.gru) then

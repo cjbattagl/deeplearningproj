@@ -38,42 +38,6 @@ classes = {
 "HammerThrow"
 }
 
-
-local ds = {}
-ds.size = 1100
-ds.FeatureDims = 1024 -- initial the dimension of feature vector
-
--- load saved feature matrix from CNN model
--- F = torch.load('feat_label_UCF11.t7')
-F = torch.load('/home/chih-yao/Downloads/feat_label_UCF101.t7')
-ds.input = F.featMats
-ds.target = F.labels
-
-if (false) then
--- input dimension = ds.size x ds.FeatureDims x opt.rho = 1100 x 1024 x time
-   if not (opt.featFile == '') then
-      -- read feature file from command line
-      print(' - - Reading external feature file . . .')
-      file = torch.DiskFile(opt.featFile, 'r')
-      ds.input = file:readObject()
-   else
-      -- generate random feature file
-      print(c.red .. ' - - No --featFile specified. Generating random feature matrix . . . ' .. c.white)
-      ds.input = torch.randn(ds.input:size(1), ds.FeatureDims, opt.rho)
-   end
-
-   -- target dimension = ds.size x 1 = 1100 x 1
-   if not (opt.targFile == '') then
-      -- read feature file from command line
-      print(' - - Reading external target file . . .')
-      file = torch.DiskFile(opt.targFile, 'r')
-      ds.target = file:readObject()
-   else
-      print(c.red .. ' - - No --targFile specified. Generating random target vector . . . ' .. c.white)
-      ds.target = torch.DoubleTensor(ds.input:size(1)):random(nClass)
-   end
-end
-
 ------------------------------------------------------------
 -- Only use a certain number of frames from each video
 ------------------------------------------------------------
@@ -134,12 +98,76 @@ function CrossValidation(Dataset, Target, nFolds)
 end
 
 
--- Only use a certain number of (consecutive) frames from each video
-ds.input = ExtractFrames(ds.input, opt.rho)
--- ds.input = ExtractConsecutiveFrames(ds.input, opt.rho)
+print(sys.COLORS.green .. '==> Reading UCF101 external feature vector and target file ...')
+-- load saved feature matrix from CNN model
+local UCF101_list = true
 
--- n-fold cross-validation
-TrainData, TrainTarget, TestData, TestTarget = CrossValidation(ds.input, ds.target, 5)
+if UCF101_list then 
+   
+   -- training and testing data from UCF101 website
+   local TrainFeatureLabels = torch.load('/home/chih-yao/Downloads/feat_label_UCF101_train_1.t7')
+   TrainData = TrainFeatureLabels.featMats
+   TrainData = ExtractFrames(TrainData, opt.rho)
+   TrainTarget = TrainFeatureLabels.labels
+
+   local TestFeatureLabels = torch.load('/home/chih-yao/Downloads/feat_label_UCF101_test_1.t7')
+   TestData = TestFeatureLabels.featMats
+   TestData = ExtractFrames(TestData, opt.rho)
+   TestTarget = TestFeatureLabels.labels
+
+else
+   print(sys.COLORS.green .. '==> Reading self-defined external feature vector and target file . . .')
+   
+   ds = {}
+
+   -- local InputFeatureLabels = torch.load('feat_label_UCF11.t7')
+   -- local InputFeatureLabels = torch.load('/home/chih-yao/Downloads/feat_label_UCF101.t7')
+   local InputFeatureLabels = torch.load('/home/chih-yao/Downloads/feat_label_UCF101_2.t7')
+
+   ds.input = InputFeatureLabels.featMats
+   ds.target = InputFeatureLabels.labels
+   ds.size = ds.input:size(1)
+   ds.FeatureDims = ds.input:size(2)
+
+   if not InputFeatureLabels then error("Cannot read feature vector file") end
+
+   -- Only use a certain number of (consecutive) frames from each video
+   ds.input = ExtractFrames(ds.input, opt.rho)
+   -- ds.input = ExtractConsecutiveFrames(ds.input, opt.rho)
+
+   -- n-fold cross-validation
+   TrainData, TrainTarget, TestData, TestTarget = CrossValidation(ds.input, ds.target, 5)
+
+end
+
+
+
+
+
+if (false) then
+-- input dimension = ds.size x ds.FeatureDims x opt.rho = 1100 x 1024 x time
+   if not (opt.featFile == '') then
+      -- read feature file from command line
+      print(' - - Reading external feature file . . .')
+      file = torch.DiskFile(opt.featFile, 'r')
+      ds.input = file:readObject()
+   else
+      -- generate random feature file
+      print(sys.COLORS.red .. ' - - No --featFile specified. Generating random feature matrix . . . ' .. c.white)
+      ds.input = torch.randn(ds.input:size(1), ds.FeatureDims, opt.rho)
+   end
+
+   -- target dimension = ds.size x 1 = 1100 x 1
+   if not (opt.targFile == '') then
+      -- read feature file from command line
+      print(' - - Reading external target file . . .')
+      file = torch.DiskFile(opt.targFile, 'r')
+      ds.target = file:readObject()
+   else
+      print(sys.COLORS.red .. ' - - No --targFile specified. Generating random target vector . . . ' .. c.white)
+      ds.target = torch.DoubleTensor(ds.input:size(1)):random(nClass)
+   end
+end
 
 
 return 

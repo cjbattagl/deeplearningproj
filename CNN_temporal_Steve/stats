@@ -1,5 +1,68 @@
-80% training, 20% testing:
 1. 
+Setting:
+1st CNN feature: NIN (1024-dim)
+frame#: 48
+nstates = {32,64,256}
+convsize = {3, 5} (also try {5, 3} ==> similar peformance)
+convstep = {1, 1}
+convpad  = {(convsize[1]-1)/2, (convsize[2]-1)/2} ==> not change the conv. output dim.
+poolsize = {4, 2}
+poolstep = {4, 2} ==> pool. output dim. = input dim./poolsize
+
+Results: (sgd/adam)
+I. UCF-101 w/ 9090 videos (80% training, 20% testing)
+(1) one dropout layer before the first linear layer (45 epochs)
+training: 100
+testing: 83.591
+(2) two dropout layers before the first linear layer (115 epochs)
+training: 100
+testing: 80.884
+---------------------------------------------------------------------------------
+II. UCF-101 w/ 13308 videos (one dropout layer) (80% training, 20% testing)
+(1) [32,64,256] + [5,3] + [4,2] (25 epochs)
+training: 99.821 / 99.492
+testing: 87.030 / 81.692
+(2) [16,32,128] + [5,3] + [4,2] (25 epochs) ==> shouldn't decrease hidden state#
+training: 99.746
+testing: 85.075
+(3) [32,64,256] + [7,5] + [4,2] (25 epochs)
+training: 99.840
+testing: 86.429
+(4) [32,64,256] + [5,3] + [6,4] (30 epochs) ==> shouldn't increase pooling size
+training: 99.483
+testing: 82.744
+(5) [64,64,256] + [5,3] + [4,2] (30 epochs) ==> hidden state# should be gradually increased
+training: 99.784
+testing: 85.000
+(6) [32,64,256] + [5,7] + [4,2] (25 epochs)
+training: 99.944
+testing: 87.180
+(7) [32,64,256] + [3,9] + [4,2] (30 epochs) ==> 1st conv size small & 2nd conv size large
+training: 100
+testing: 87.632
+---------------------------------------------------------------------------------
+III. UCF-101 w/ 1st set (one dropout layer)
+(7) [32,64,256] + [3,9] + [4,2] (25 epochs) 
+training: 100
+testing: 57.493
+(8) [32,64,256] + [3,11] + [4,2] (30 epochs) 
+training: 100
+testing: 58.267
+(9) [20,50,250] + [5,5] + [2,2] (24 epochs) ==> mimic MNIST 
+training: 100
+testing: 59.653
+(10) [32,64,256] + [3,13] + [4,2] (25 epochs) 
+training: 100
+testing: 58.187
+(11) [32,64,256] + [5,11] + [4,2] (25 epochs) 
+training: 100
+testing: 56.667
+(12) [20,50,250] + [3,11] + [2,2] (45 epochs) ==> the best now
+training: 100
+testing: 60.240
+
+===========================================================
+2. 1 layer 
 Setting:
 1st CNN feature: NIN (1024-dim)
 frame#: 48
@@ -10,7 +73,25 @@ convpad  = {(convsize[1]-1)/2, (convsize[2]-1)/2} ==> not change the conv. outpu
 poolsize = {4, 2}
 poolstep = {4, 2} ==> pool. output dim. = input dim./poolsize
 
-Results: (45 epochs)
-training: 100
-testing: 83.591
+Results: 
+(I) 2D convolution ( epochs)
+training: 
+testing: 
+
+===========================================================
+3. 3 layers
+Setting:
+1st CNN feature: NIN (1024-dim)
+frame#: 48
+nstates = {32,64,128,256}
+convsize = {3, 5, 7}
+convstep = {1, 1, 1}
+convpad  = {(convsize[1]-1)/2, (convsize[2]-1)/2, (convsize[3]-1)/2} ==> not change the conv. output dim.
+poolsize = {4, 3, 2}
+poolstep = {4, 3, 2} ==> pool. output dim. = input dim./poolsize
+
+Results: ( epochs)
+training: 
+testing: 
+------------------------------------------------
 

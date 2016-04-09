@@ -121,7 +121,7 @@ print(sys.COLORS.red ..  '==> defining training procedure')
 local epoch
 local function data_augmentation(inputs)
         -- DATA augmentation (only random 1-D cropping here)
-		local i = torch.random(1,10)
+		local i = torch.random(1,3)
 		local outputs = inputs[{{},{i,i+47}}]
 		return outputs
 		
@@ -186,6 +186,8 @@ local function train(trainData)
          -- optimize on current mini-batch
          if opt.optMethod == 'sgd' then
             optim.sgd(eval_E, w, optimState)
+         elseif opt.optMethod == 'adam' then
+            optim.adam(eval_E, w, optimState)
          elseif opt.optMethod == 'asgd' then
             run_passed = run_passed + 1
             mean_dfdx  = asgd(eval_E, w, run_passed, mean_dfdx, optimState)

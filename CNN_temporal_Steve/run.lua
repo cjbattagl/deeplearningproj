@@ -39,7 +39,7 @@ opt = lapp[[
       --model              (default CNN)         network model
       --optMethod          (default sgd)         optimization method
       --plot               (default false)       plot the training and test accuracies
-      --dataAugment        (default false)       Enable dataAugmentation while training
+      --dataAugment        (default true)       Enable dataAugmentation while training
 ]]
 -- nb of threads and fixed seed (for repeatable experiments)
 torch.setnumthreads(opt.threads)
@@ -57,7 +57,7 @@ end
 ----------------------------------------------------------------------
 print(sys.COLORS.red ..  '==> load modules')
 
-local data  = require 'data'
+local data  = require 'data_final'
 local train = require 'train'
 local test  = require 'test'
 --
@@ -65,7 +65,7 @@ local test  = require 'test'
 print(sys.COLORS.red .. '==> training!')
 --
 
-for i=1,50 do 
+for i=1,300 do 
 --while true do
 	train(data.trainData)
     test(data.testData)

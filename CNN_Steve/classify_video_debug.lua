@@ -42,17 +42,17 @@ dir_model = './models/'
 
 -- 5. VGG model (from caffe)
 model_name = 'VGG'
--- prototxt = dir_model .. './VGG_ILSVRC_19_layers_deploy.prototxt'
--- binary = dir_model .. './VGG_ILSVRC_19_layers.caffemodel'
-prototxt = dir_model .. './VGG_CNN_M_deploy.prototxt'
-binary = dir_model .. './VGG_CNN_M.caffemodel'
+prototxt = dir_model .. './VGG_ILSVRC_19_layers_deploy.prototxt'
+binary = dir_model .. './VGG_ILSVRC_19_layers.caffemodel'
+--prototxt = dir_model .. './VGG_CNN_M_deploy.prototxt'
+--binary = dir_model .. './VGG_CNN_M.caffemodel'
 
 ------ input image ------
 --image_name = 'cat.jpg'
 --image_name = 'leopard.jpg'
-image_name = 'dog.png'
+--image_name = 'dog.png'
 --image_name = 'Goldfish3.jpg'
---image_name = 'frame-000001.png'
+image_name = 'frame-000001.png'
 --image_name = 'annas_hummingbird_sim_1.jpg'
 
 model_path = dir_model..model_name
@@ -78,13 +78,22 @@ print '==> Loading model'
 -- net = torch.load(model_path):unpack():float()
 
 -- 2. Caffe model
- net = loadcaffe.load(prototxt, binary)
+ net = loadcaffe.load(prototxt, binary):float()
 -- net:remove(24) 
 
 --net:evaluate()
 
--- model modification
--- net:remove(24) 
+-- model modification 
+-- for VGG (use fc-6)
+net:remove()
+net:remove() 
+net:remove() 
+net:remove() 
+net:remove() 
+net:remove() 
+net:remove() 
+
+
 -- net:add(nn.View(-1))
 -- net:add(nn.SoftMax())
 
@@ -168,23 +177,23 @@ end
 -- 			 Forward Propagation			--
 ----------------------------------------------
 -- 1. forward to get feature vectors
---print 'Obtain the final feature'
---feat = net:forward(I)
---print(feat)
+print 'Obtain the final feature'
+feat = net:forward(I)
+print(feat:size())
 
 -- 2. forward to get prediction labels
-print 'Propagate through the model, sort outputs in decreasing order and show 5 best classes'
+--print 'Propagate through the model, sort outputs in decreasing order and show 5 best classes'
 
 -- -- (a) original prediction codes 
 -- out = net:forward(I:cuda())
 -- print(out)
 --print(net)
 
-_,classes = net:forward(I:double()):view(-1):sort(true)
---print(classes)
-for i=1,5 do
-  print('predicted class '..tostring(i)..': ', synset_words[classes[i] ])
-end
+-- _,classes = net:forward(I:double()):view(-1):sort(true)
+-- --print(classes)
+-- for i=1,5 do
+--   print('predicted class '..tostring(i)..': ', synset_words[classes[i] ])
+-- end
 
 -- -- (b) prediction codes from ResNet
 -- N = 5

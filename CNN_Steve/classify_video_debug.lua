@@ -9,16 +9,16 @@
 -- 3. input: 	image
 --	  output:	feature vector/prediction labels
 
--- author: Min-Hung Chen
--- contact: cmhungsteve@gatech.edu
--- Last updated: 04/08/2016
+-- author: Min-Hung Chen, modified by Hao Yan
+-- contact: cmhungsteve@gatech.edu, yanhao@gatech.edu
+-- Last updated: 04/09/2016
 
 require 'loadcaffe' 
 require 'image'
 require 'nn'
 require 'cunn'
 --require 'cudnn'
-
+local matio = require 'matio'
 -- data path
 dir_image = './images/'
 dir_model = './models/'
@@ -28,7 +28,7 @@ dir_model = './models/'
 ----------------------------------------------
 ------ model selection ------
 -- 1. NIN model (from Torch)
-model_name = 'nin_nobn_final.t7'
+-- model_name = 'nin_nobn_final.t7'
 
 -- 2. GoogleNet model (from Torch) ==> need cudnn
 --model_name = 'GoogLeNet_v2.t7'
@@ -41,6 +41,7 @@ model_name = 'nin_nobn_final.t7'
 --binary = dir_model .. './nin_imagenet.caffemodel'
 
 -- 5. VGG model (from caffe)
+model_name = 'VGG'
 -- prototxt = dir_model .. './VGG_ILSVRC_19_layers_deploy.prototxt'
 -- binary = dir_model .. './VGG_ILSVRC_19_layers.caffemodel'
 prototxt = dir_model .. './VGG_CNN_M_deploy.prototxt'
@@ -74,10 +75,10 @@ end
 ------ Loading the model ------
 print '==> Loading model'
 -- 1. Torch model
-net = torch.load(model_path):unpack():float()
+-- net = torch.load(model_path):unpack():float()
 
 -- 2. Caffe model
--- net = loadcaffe.load(prototxt, binary)
+ net = loadcaffe.load(prototxt, binary)
 -- net:remove(24) 
 
 --net:evaluate()
@@ -130,19 +131,32 @@ print '==> Preprocessing (normalization)'
 --I = im.clone() ==> it show errors......
 --I = image.scale(torch.Tensor(im:size()):copy(im):float(),224,224,'bilinear')
 
+if model_name ~= 'VGG' then
 -- mean & std
-img_mean = torch.Tensor({0.48462227599918, 0.45624044862054, 0.40588363755159})
-img_std = torch.Tensor({0.22889466674951, 0.22446679341259, 0.22495548344775})
+    img_mean = torch.Tensor({0.48462227599918, 0.45624044862054, 0.40588363755159})
+    img_std = torch.Tensor({0.22889466674951, 0.22446679341259, 0.22495548344775})
+
+    I = preprocess(im, img_mean, img_std):view(1,3,224,224):float()
 
 -- mean_name = 'ilsvrc_2012_mean.t7'
 -- mean_path = dir_model..mean_name
 -- img_mean = torch.load(mean_path).img_mean:transpose(3,1):float():div(255)
 
 -- rescale & normalization
-print('ImageNet')
+    print('ImageNet')
 --print(img_mean, img_std)
-I = preprocess(im, img_mean, img_std):view(1,3,224,224):float()
+else 
+    img_mean=matio.load('./models/VGG_mean.mat').image_mean:transpose(3,1):float()
+    im3 = image.scale(im,224,224,'bilinear')
+    im3:resize(1,3,224,224)
+    im3:mul(255)
+    I = im3:view(1,3,224,224):float()
+    I:add(-1,torch.repeatTensor(img_mean,I:size(1),1,1,1))
+
+end
+
 --I = preprocess(im, img_mean, img_std):float()
+
 
 -- -- rescale the image
 -- im_sc = image.scale(im,224,224,'bilinear')
@@ -166,7 +180,7 @@ print 'Propagate through the model, sort outputs in decreasing order and show 5 
 -- print(out)
 --print(net)
 
-_,classes = net:forward(I):view(-1):sort(true)
+_,classes = net:forward(I:double()):view(-1):sort(true)
 --print(classes)
 for i=1,5 do
   print('predicted class '..tostring(i)..': ', synset_words[classes[i] ])

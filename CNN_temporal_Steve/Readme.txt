@@ -7,8 +7,8 @@ notes:
 	(1) model_1: 	1 layer
 	(2) model_2D: 	2 layers with 2D kernels
 	(3) model_3:	3 layers
-3. best performance: in the folder "results_final/results_final_12"
-[20,50,250] + [3,11] + [2,2] (45 epochs) 
+3. best performance: in the folder "results_1L"
+[25,250] + [11] + [2] (40 epochs)
 training: 100
-testing: 60.240
+testing: 62.213
 

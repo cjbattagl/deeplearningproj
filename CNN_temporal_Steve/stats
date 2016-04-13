@@ -18,7 +18,7 @@ testing: 83.591
 training: 100
 testing: 80.884
 ---------------------------------------------------------------------------------
-II. UCF-101 w/ 13308 videos (one dropout layer) (80% training, 20% testing)
+II. UCF-101 w/ 13308 videos (one dropout layer) (80% training, 20% testing) ==> "results_all"
 (1) [32,64,256] + [5,3] + [4,2] (25 epochs)
 training: 99.821 / 99.492
 testing: 87.030 / 81.692
@@ -41,11 +41,11 @@ testing: 87.180
 training: 100
 testing: 87.632
 ---------------------------------------------------------------------------------
-III. UCF-101 w/ 1st set (one dropout layer)
+III. UCF-101 w/ 1st set (one dropout layer) ==> "results_final"
 (7) [32,64,256] + [3,9] + [4,2] (25 epochs) 
 training: 100
 testing: 57.493
-(8) [32,64,256] + [3,11] + [4,2] (30 epochs) 
+(8) [32,64,256] + [3,11] + [4,2] (30 epochs) ==> the 2nd best now
 training: 100
 testing: 58.267
 (9) [20,50,250] + [5,5] + [2,2] (24 epochs) ==> mimic MNIST 
@@ -62,24 +62,45 @@ training: 100
 testing: 60.240
 
 ===========================================================
-2. 1 layer 
+2. 2D kernel  ==> "results_2D"
 Setting:
 1st CNN feature: NIN (1024-dim)
 frame#: 48
-nstates = {32,64,256}
-convsize = {3, 5}
+nstates = {20,50,250}
+convsize = {3, 11}
 convstep = {1, 1}
 convpad  = {(convsize[1]-1)/2, (convsize[2]-1)/2} ==> not change the conv. output dim.
-poolsize = {4, 2}
-poolstep = {4, 2} ==> pool. output dim. = input dim./poolsize
+poolsize = {2, 2}
+poolstep = {2, 2} ==> pool. output dim. = input dim./poolsize
 
 Results: 
-(I) 2D convolution ( epochs)
-training: 
-testing: 
+(1) default (53 epochs)
+training: 99.937
+testing: 58.853
+(2) [20,50,500] + [5,5] + [2,2] (33 epochs)
+training: 99.958
+testing: 59.840
+
 
 ===========================================================
-3. 3 layers
+3. 1 layer ==> "results_1L"
+Setting:
+1st CNN feature: NIN (1024-dim)
+frame#: 48
+nstates = {25,250}
+convsize = {11}
+convstep = {1}
+convpad  = {(convsize[1]-1)/2} ==> not change the conv. output dim.
+poolsize = {2}
+poolstep = {2} ==> pool. output dim. = input dim./poolsize
+
+Results: 
+(1) default (40 epochs)
+training: 100
+testing: 62.213
+
+===========================================================
+4. 3 layers (TODO)
 Setting:
 1st CNN feature: NIN (1024-dim)
 frame#: 48
@@ -93,5 +114,6 @@ poolstep = {4, 3, 2} ==> pool. output dim. = input dim./poolsize
 Results: ( epochs)
 training: 
 testing: 
-------------------------------------------------
+
+===========================================================
 

@@ -10,7 +10,7 @@
 
 -- modified by Min-Hung Chen
 -- contact: cmhungsteve@gatech.edu
--- Last updated: 04/03/2016
+-- Last updated: 04/12/2016
 
 
 require 'pl'
@@ -28,9 +28,9 @@ opt = lapp[[
    -w,--weightDecay        (default 1e-5)        L2 penalty on the weights
    -m,--momentum           (default 0.1)         momentum
    -d,--dropout            (default 0.5)         dropout amount
-   -b,--batchSize          (default 128)         batch size
+   -b,--batchSize          (default 10)         batch size
    -t,--threads            (default 4)           number of threads
-   -p,--type               (default float)       float or cuda
+   -p,--type               (default cuda)       float or cuda
    -i,--devid              (default 1)           device ID (if using CUDA)
    -s,--size               (default small)       dataset: small or full or extra
    -o,--save               (default results)     save directory
@@ -55,17 +55,18 @@ if opt.type == 'cuda' then
 end
 
 ----------------------------------------------------------------------
-print(sys.COLORS.red ..  '==> load modules')
-
+print(sys.COLORS.red ..  '==> load data')
 local data  = require 'data_final'
+print(sys.COLORS.red ..  '==> prepare for training')
 local train = require 'train'
+print(sys.COLORS.red ..  '==> prepare for testing')
 local test  = require 'test'
 --
 ------------------------------------------------------------------------
 print(sys.COLORS.red .. '==> training!')
 --
 
-for i=1,300 do 
+for epo=1,300 do 
 --while true do
 	train(data.trainData)
     test(data.testData)

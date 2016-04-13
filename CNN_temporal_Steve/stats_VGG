@@ -1,0 +1,19 @@
+1. 
+Setting:
+1st CNN feature: VGG_M (4096-dim)
+frame#: 48
+nstates = {20,50,250}
+convsize = {3, 11} 
+convstep = {1, 1}
+convpad  = {(convsize[1]-1)/2, (convsize[2]-1)/2} ==> not change the conv. output dim.
+poolsize = {2, 2}
+poolstep = {2, 2} ==> pool. output dim. = input dim./poolsize
+
+Results: 
+III. UCF-101 w/ 1st set (one dropout layer)
+(1) default (7 epochs)  
+training: 100
+testing: 62.240
+
+===========================================================
+

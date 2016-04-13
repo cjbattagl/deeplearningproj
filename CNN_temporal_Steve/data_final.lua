@@ -19,6 +19,7 @@ require 'torch'   -- torch
 -- 				         Data paths		            --
 ----------------------------------------------
 dirDatabase = '../Dataset/'
+dirFeature = dirDatabase..'NIN/'
 
 ----------------------------------------------
 -- 			      User-defined parameters		    --
@@ -29,8 +30,11 @@ dirDatabase = '../Dataset/'
 -- 					       Load Data		    	      --
 ----------------------------------------------
 -- Load all the feature matrices & labels
-dataTrain = torch.load(dirDatabase..'feat_label_UCF101_train_1.t7')
-dataTest = torch.load(dirDatabase..'feat_label_UCF101_test_1.t7')
+
+print('==> load training data')
+dataTrain = torch.load(dirFeature..'feat_label_UCF101_train_1.t7')
+print('==> load test data')
+dataTest = torch.load(dirFeature..'feat_label_UCF101_test_1.t7')
 
 
 -- information for the data

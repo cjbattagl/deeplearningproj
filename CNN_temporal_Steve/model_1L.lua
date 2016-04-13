@@ -3,6 +3,7 @@
 -- Final Project: Video Classification
 
 -- Create CNN and loss to optimize.
+-- 1 conv layer
 
 -- TODO:
 -- 1. change nstate
@@ -10,7 +11,7 @@
 
 -- modified by Min-Hung Chen
 -- contact: cmhungsteve@gatech.edu
--- Last updated: 04/06/2016
+-- Last updated: 04/13/2016
 
 
 require 'torch'   -- torch
@@ -28,7 +29,7 @@ print '==> processing options'
 ----------------------------------------------------------------------
 print(sys.COLORS.red ..  '==> define parameters')
 
--- 101 classes problem
+-- 11 classes problem
 local noutputs = 101
 
 -- input dimensions: 
@@ -36,27 +37,12 @@ local nframe = 48
 local nfeature = 1024
 
 -- hidden units, filter sizes (for ConvNet only):
---local nstates = {64,64,256} 		-- exp. 5
---local nstates = {32,64,256} 		-- exp. 1, 3, 4, 6, 7, 8, 10, 11
---local nstates = {30,60,250} 		-- exp. ?
-local nstates = {20,50,250} 		-- exp. 9, 12
---local nstates = {16,32,128} 		-- exp. 2
---local convsize = {5, 7} 			-- exp. 6
-local convsize = {3, 11}        	-- exp. 8, 12
---local convsize = {3, 13}        	-- exp. 10
---local convsize = {5, 11}        	-- exp. 11
---local convsize = {3, 9} 			-- exp. 7
---local convsize = {7, 5} 			-- exp. 3
---local convsize = {3, 5} 			-- exp. 1, 2, 4
---local convsize = {5, 5} 			-- exp. 9
-local convstep = {1, 1}
-local convpad  = {(convsize[1]-1)/2, (convsize[2]-1)/2}
---local poolsize = {4, 2} 			-- exp. 1, 2, 3, 5, 6, 7, 8, 10
---local poolstep = {4, 2} 			-- exp. 1, 2, 3, 5, 6, 7, 8, 10
-local poolsize = {2, 2} 			-- exp. 9, 12
-local poolstep = {2, 2} 			-- exp. 9, 12
--- local poolsize = {6, 4} 			-- exp. 4
--- local poolstep = {6, 4} 			-- exp. 4
+local nstates = {25,250} 		     -- exp. 1
+local convsize = {11} 			     -- exp. 1
+local convstep = {1}
+local convpad  = {(convsize[1]-1)/2}
+local poolsize = {2} 			-- exp. 1
+local poolstep = {2} 			-- exp. 1
 
 ----------------------------------------------------------------------
 local classifier = nn.Sequential()
@@ -83,31 +69,18 @@ if opt.model == 'CNN' then
    local sizePool1_w = sizeConv1_w
    local sizePool1_h = (sizeConv1_h-poolsize[1])/poolstep[1]+1
 
-   --CNN:add(nn.Dropout(opt.dropout)) -- dropout
-
-   -- stage 2: conv -> ReLU -> Pooling   
-   CNN:add(nn.SpatialConvolutionMM(nstates[1],nstates[2],1,convsize[2],1,convstep[2],0,convpad[2])) -- 12*1024
-   local sizeConv2_w = sizePool1_w
-   local sizeConv2_h = (sizePool1_h-convsize[2]+2*convpad[2])/convstep[2]+1
-
-   CNN:add(nn.ReLU()) 
-   CNN:add(nn.SpatialMaxPooling(1,poolsize[2],1,poolstep[2]))  -- 6*1024
-   local sizePool2_w = sizeConv2_w
-   local sizePool2_h = (sizeConv2_h-poolsize[2])/poolstep[2]+1
-
    CNN:add(nn.Dropout(opt.dropout)) -- dropout
 
    -- stage 3: linear -> ReLU -> linear
-   local ninputFC = sizePool2_w*sizePool2_h*nstates[2] -- exp. 1, 2, 3, 6, 7, 8, 9
-   --local ninputFC = 64*42*48 -- exp. 4
-   --local ninputFC = 64*128*48 -- exp. 5
+   local ninputFC = sizePool1_w*sizePool1_h*nstates[1] -- exp. 1
+
    CNN:add(nn.Reshape(ninputFC))
-   CNN:add(nn.Linear(ninputFC,nstates[3]))
+   CNN:add(nn.Linear(ninputFC,nstates[2]))
    CNN:add(nn.ReLU())
 
    --CNN:add(nn.Dropout(opt.dropout)) -- dropout
 
-   CNN:add(nn.Linear(nstates[3],noutputs))
+   CNN:add(nn.Linear(nstates[2],noutputs))
 
    -- stage 4 : log probabilities
    CNN:add(nn.LogSoftMax())

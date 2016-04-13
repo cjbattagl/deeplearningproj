@@ -22,7 +22,7 @@ require 'image'
 print(sys.COLORS.red .. '==> defining some tools')
 
 -- model:
-local t = require 'model'
+local t = require 'model_1L'
 local model = t.model
 local loss = t.loss
 local nframe = t.nframe

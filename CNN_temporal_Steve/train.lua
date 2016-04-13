@@ -34,7 +34,7 @@ require 'image'
 
 ----------------------------------------------------------------------
 -- Model + Loss:
-local t = require 'model'
+local t = require 'model_1L'
 local model = t.model
 local fwmodel = t.model
 local loss = t.loss

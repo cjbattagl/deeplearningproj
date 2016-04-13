@@ -3,6 +3,7 @@
 -- Final Project: Video Classification
 
 -- Create CNN and loss to optimize.
+-- parameters for the VGG_M network
 
 -- TODO:
 -- 1. change nstate
@@ -10,7 +11,7 @@
 
 -- modified by Min-Hung Chen
 -- contact: cmhungsteve@gatech.edu
--- Last updated: 04/06/2016
+-- Last updated: 04/12/2016
 
 
 require 'torch'   -- torch
@@ -33,35 +34,20 @@ local noutputs = 101
 
 -- input dimensions: 
 local nframe = 48
-local nfeature = 1024
+local nfeature = 4096
 
 -- hidden units, filter sizes (for ConvNet only):
---local nstates = {64,64,256} 		-- exp. 5
---local nstates = {32,64,256} 		-- exp. 1, 3, 4, 6, 7, 8, 10, 11
---local nstates = {30,60,250} 		-- exp. ?
-local nstates = {20,50,250} 		-- exp. 9, 12
---local nstates = {16,32,128} 		-- exp. 2
---local convsize = {5, 7} 			-- exp. 6
-local convsize = {3, 11}        	-- exp. 8, 12
---local convsize = {3, 13}        	-- exp. 10
---local convsize = {5, 11}        	-- exp. 11
---local convsize = {3, 9} 			-- exp. 7
---local convsize = {7, 5} 			-- exp. 3
---local convsize = {3, 5} 			-- exp. 1, 2, 4
---local convsize = {5, 5} 			-- exp. 9
+local nstates = {20,50,250} 		-- exp. 1
+local convsize = {3, 11}        	-- exp. 1
 local convstep = {1, 1}
 local convpad  = {(convsize[1]-1)/2, (convsize[2]-1)/2}
---local poolsize = {4, 2} 			-- exp. 1, 2, 3, 5, 6, 7, 8, 10
---local poolstep = {4, 2} 			-- exp. 1, 2, 3, 5, 6, 7, 8, 10
-local poolsize = {2, 2} 			-- exp. 9, 12
-local poolstep = {2, 2} 			-- exp. 9, 12
--- local poolsize = {6, 4} 			-- exp. 4
--- local poolstep = {6, 4} 			-- exp. 4
+local poolsize = {2, 2} 			-- exp. 1
+local poolstep = {2, 2} 			-- exp. 1
 
 ----------------------------------------------------------------------
 local classifier = nn.Sequential()
 local model = nn.Sequential()
-local model_name ="model.net"
+local model_name = "model.net"
 
 if opt.model == 'CNN' then
    print(sys.COLORS.red ..  '==> construct CNN')
@@ -132,7 +118,7 @@ end
 return {
    model = model,
    loss = loss,
-   nfeature = 1024,
+   nfeature = 4096,
    nframe = 48,
    model_name = model_name,
 }

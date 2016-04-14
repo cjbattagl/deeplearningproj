@@ -1,4 +1,4 @@
-run_UCF101_final_ResNet.lua:
+# run_UCF101_final_ResNet.lua: <br />
 similar as "run_UCF101_final.lua", but using the model "ResNet-101" <br />
 extract the feature before the full-connected layer <br />
 generate the name list as well <br />

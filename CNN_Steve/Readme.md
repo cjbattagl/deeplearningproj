@@ -1,20 +1,20 @@
-## run_UCF101_final_ResNet.lua:
-similar as "run_UCF101_final.lua", but using the model "ResNet-101"
-extract the feature before the full-connected layer
-generate the name list as well
+run_UCF101_final_ResNet.lua:
+similar as "run_UCF101_final.lua", but using the model "ResNet-101" <br />
+extract the feature before the full-connected layer <br />
+generate the name list as well <br />
 
 command: th run_UCF101_final_ResNet.lua 
 
-notes:
-1. You need to downoload the dataset and modify the path in the code
-2. parameters: 
-	feature dimension = 2048
-	class#, frame#: same as "run_UCF101_final.lua"
-3. There are four kinds of outputs (name, path, featMats & labels) & three numbers
-	name, path:	same as "run_UCF101_final_nameList.lua"
-	numVideo, featMats, labels, numClass, c_finished: same as "run_UCF101_final.lua"
-4. running time: around 3.7 times of "run_UCF101_final.lua"
-5. need "transforms.lua" to pre-process images	
+notes: <br />
+1. You need to downoload the dataset and modify the path in the code <br />
+2. parameters: <br />
+	feature dimension = 2048 <br />
+	class#, frame#: same as "run_UCF101_final.lua" <br />
+3. There are four kinds of outputs (name, path, featMats & labels) & three numbers <br />
+	name, path:	same as "run_UCF101_final_nameList.lua" <br />
+	numVideo, featMats, labels, numClass, c_finished: same as "run_UCF101_final.lua" <br />
+4. running time: around 3.7 times of "run_UCF101_final.lua" <br />
+5. need "transforms.lua" to pre-process images <br />
 =============================================================================
 ## run_UCF101_final_caffe.lua:
 similar as "run_UCF101_final.lua", but using the caffe model "VGG_M"

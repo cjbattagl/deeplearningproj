@@ -15,6 +15,7 @@ notes: <br />
 	numVideo, featMats, labels, numClass, c_finished: same as "run_UCF101_final.lua" <br />
 4. running time: around 3.7 times of "run_UCF101_final.lua" <br />
 5. need "transforms.lua" to pre-process images <br />
+
 =============================================================================
 ## run_UCF101_final_caffe.lua:
 similar as "run_UCF101_final.lua", but using the caffe model "VGG_M"

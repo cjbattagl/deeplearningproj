@@ -5,257 +5,41 @@
 % If IEEEtran.cls has not been installed into the LaTeX system files,
 % manually specify the path to it like:
 % \documentclass[conference]{../sty/IEEEtran}
-
 \usepackage{vuduc-stdpkgs}
 \usepackage{vuduc-typography}
-% \usepackage[]{algorithm2e}
-% \usepackage{algcompatible}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \algdef{SE}[DOWHILE]{Do}{doWhile}{\algorithmicdo}[1]{\algorithmicwhile\ #1}
 \usepackage{amsfonts}
-% \SetKwRepeat{Do}{do}{while}
-% ===== Theorem typography =====
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{corollary}[theorem]{Corollary}
-
-% Some very useful LaTeX packages include:
-% (uncomment the ones you want to load)
-
-%% new tabular commands
 \usepackage{booktabs}
 \newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}}
-
-
-%
 \ifCLASSINFOpdf
-  % \usepackage[pdftex]{graphicx}
-  % declare the path(s) where your graphic files are
-  % \graphicspath{{../pdf/}{../jpeg/}}
-  % and their extensions so you won't have to specify these with
-  % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
 \else
-  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
-  % will default to the driver specified in the system graphics.cfg if no
-  % driver is specified.
-  % \usepackage[dvips]{graphicx}
-  % declare the path(s) where your graphic files are
-  % \graphicspath{{../eps/}}
-  % and their extensions so you won't have to specify these with
-  % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.eps}
 \fi
 \hyphenation{op-tical net-works semi-conduc-tor}
-
 \begin{document}
-\title{CS 8803DL: Deep Learning Project}
-
-% author names and affiliations
-% use a multiple column layout for up to three different
-% affiliations
-% \author{\IEEEauthorblockN{Jiajia Li}
-% \IEEEauthorblockA{School of Computational Science and Engineering\\
-% Georgia Institute of Technology\\
-% Atlanta, Georgia 30332\\
-% Email: jiajiali@gatech.edu}
-% \and
-% \IEEEauthorblockN{Homer Simpson}
-% \IEEEauthorblockA{Twentieth Century Fox\\
-% Springfield, USA\\
-% Email: homer@thesimpsons.com}
-% \and
-% \IEEEauthorblockN{James Kirk\\ and Montgomery Scott}
-% \IEEEauthorblockA{Starfleet Academy\\
-% San Francisco, California 96678--2391\\
-% Telephone: (800) 555--1212\\
-% Fax: (888) 555--1212}}
-
-% conference papers do not typically use \thanks and this command
-% is locked out in conference mode. If really needed, such as for
-% the acknowledgment of grants, issue a \IEEEoverridecommandlockouts
-% after \documentclass
-
-% for over three affiliations, or if they all won't fit within the width
-% of the page, use this alternative format:
-% 
-%\author{Casey Battaglino\thanks{cbattaglino3@gatech.edu}}
-%\author{Min-Hung Chen\thanks{cmhungsteve@gatech.edu}}
-%\author{Chih-Yao Ma\thanks{cyma@gatech.edu}}
-%\author{Hao Yan\thanks{yanhao@gatech.edu}}
-
+\title{Fine Tuning Video Classification using Artificial Neural Networks}
 \author{\IEEEauthorblockN{Casey Battaglino\IEEEauthorrefmark{1},
 Min-Hung Chen\IEEEauthorrefmark{2},
 Chih-Yao Ma\IEEEauthorrefmark{3} and 
 Hao Yan\IEEEauthorrefmark{3}}
-\IEEEauthorblockA{\IEEEauthorrefmark{1}Computational Science and Engineering\\
-Georgia Institute of Technology,
-Atlanta, Georgia 30332--0250\\ Email: cbattaglino3@gatech.edu}
-\IEEEauthorblockA{\IEEEauthorrefmark{2}Twentieth Century Fox, Springfield, USA\\
-Email: homer@thesimpsons.com}
-\IEEEauthorblockA{\IEEEauthorrefmark{3}Starfleet Academy, San Francisco, California 96678-2391\\
-Telephone: (800) 555--1212, Fax: (888) 555--1212}
-\IEEEauthorblockA{\IEEEauthorrefmark{4}Tyrell Inc., 123 Replicant Street, Los Angeles, California 90210--4321}}
-
-
-
-
-% use for special paper notices
-%\IEEEspecialpapernotice{(Invited Paper)}
-
-
-
-
-% make the title area
+\IEEEauthorblockA{
+Georgia Institute of Technology\\
+Atlanta, GA 30332--0250\\
+Email: \IEEEauthorrefmark{1}cbattaglino3@gatech.edu,
+\IEEEauthorrefmark{2}cmhungsteve@gatech.edu,
+\IEEEauthorrefmark{3}cyma@gatech.edu,
+\IEEEauthorrefmark{4}yanhao@gatech.edu}}
 \maketitle
-
-% As a general rule, do not put math, special symbols or citations
-% in the abstract
 \begin{abstract}
-Put abstract here.
+Compared to static images, video data contain a wealth of temporal information.
+Deep learning techniques overwhelmingly target 2D images, while no consensus has yet been formed on the best techniques for video classification. In this study, we examine and implement several leading techniques for video classification, while proposing and investigating a novel technique that performs a convolution on temporally-constructed feature vectors.
 \end{abstract}
-
-% no keywords
-
-
-
-
-% For peer review papers, you can put extra information on the cover
-% page as needed:
-% \ifCLASSOPTIONpeerreview
-% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
-% \fi
-%
-% For peerreview papers, this IEEEtran command inserts a page break and
-% creates the second title. It will be ignored for other modes.
-%\IEEEpeerreviewmaketitle
-
-
 \input{./2-00-final}
-
-% no \IEEEPARstart
-
-% You must have at least 2 lines in the paragraph with the drop letter
-% (should never be an issue)
-
-% \hfill mds
-% \hfill August 26, 2015
-
-
-
-
-
-
-
-% An example of a floating figure using the graphicx package.
-% Note that \label must occur AFTER (or within) \caption.
-% For figures, \caption should occur after the \includegraphics.
-% Note that IEEEtran v1.7 and later has special internal code that
-% is designed to preserve the operation of \label within \caption
-% even when the captionsoff option is in effect. However, because
-% of issues like this, it may be the safest practice to put all your
-% \label just after \caption rather than within \caption{}.
-%
-% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class
-% option should be used if it is desired that the figures are to be
-% displayed while in draft mode.
-%
-%\begin{figure}[!t]
-%\centering
-%\includegraphics[width=2.5in]{myfigure}
-% where an .eps filename suffix will be assumed under latex, 
-% and a .pdf suffix will be assumed for pdflatex; or what has been declared
-% via \DeclareGraphicsExtensions.
-%\caption{Simulation results for the network.}
-%\label{fig_sim}
-%\end{figure}
-
-% Note that the IEEE typically puts floats only at the top, even when this
-% results in a large percentage of a column being occupied by floats.
-
-
-% An example of a double column floating figure using two subfigures.
-% (The subfig.sty package must be loaded for this to work.)
-% The subfigure \label commands are set within each subfloat command,
-% and the \label for the overall figure must come after \caption.
-% \hfil is used as a separator to get equal spacing.
-% Watch out that the combined width of all the subfigures on a 
-% line do not exceed the text width or a line break will occur.
-%
-%\begin{figure*}[!t]
-%\centering
-%\subfloat[Case I]{\includegraphics[width=2.5in]{box}%
-%\label{fig_first_case}}
-%\hfil
-%\subfloat[Case II]{\includegraphics[width=2.5in]{box}%
-%\label{fig_second_case}}
-%\caption{Simulation results for the network.}
-%\label{fig_sim}
-%\end{figure*}
-%
-% Note that often IEEE papers with subfigures do not employ subfigure
-% captions (using the optional argument to \subfloat[]), but instead will
-% reference/describe all of them (a), (b), etc., within the main caption.
-% Be aware that for subfig.sty to generate the (a), (b), etc., subfigure
-% labels, the optional argument to \subfloat must be present. If a
-% subcaption is not desired, just leave its contents blank,
-% e.g., \subfloat[].
-
-
-% An example of a floating table. Note that, for IEEE style tables, the
-% \caption command should come BEFORE the table and, given that table
-% captions serve much like titles, are usually capitalized except for words
-% such as a, an, and, as, at, but, by, for, in, nor, of, on, or, the, to
-% and up, which are usually not capitalized unless they are the first or
-% last word of the caption. Table text will default to \footnotesize as
-% the IEEE normally uses this smaller font for tables.
-% The \label must come after \caption as always.
-%
-%\begin{table}[!t]
-%% increase table row spacing, adjust to taste
-%\renewcommand{\arraystretch}{1.3}
-% if using array.sty, it might be a good idea to tweak the value of
-% \extrarowheight as needed to properly center the text within the cells
-%\caption{An Example of a Table}
-%\label{table_example}
-%\centering
-%% Some packages, such as MDW tools, offer better commands for making tables
-%% than the plain LaTeX2e tabular which is used here.
-%\begin{tabular}{|c||c|}
-%\hline
-%One & Two\\
-%\hline
-%Three & Four\\
-%\hline
-%\end{tabular}
-%\end{table}
-
-
-% http://mirror.ctan.org/biblio/bibtex/contrib/doc/
-% The IEEEtran BibTeX style support page is at:
-% http://www.michaelshell.org/tex/ieeetran/bibtex/
 \bibliographystyle{IEEEtran}
-% argument is your BibTeX string definitions and bibliography database(s)
-%\bibliography{IEEEabrv,../bib/paper}
-%
-% <OR> manually copy in the resultant .bbl file
-% set second argument of \begin to the number of references
-% (used to reserve space for the reference number labels box)
-% \begin{thebibliography}{1}
-
-% \bibitem{IEEEhowto:kopka}
-% H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
-%   0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
-
-% \end{thebibliography}
-
-
 \bibliography{bib}
-
-
-% that's all folks
 \end{document}
-
-

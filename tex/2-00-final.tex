@@ -1,10 +1,15 @@
 \section{Introduction}
 Deep convolutional neural networks are currently the leading technique for image classification; 
 convolutional layers capture patterns in spatial locality, while deep topologies capture the compositional nature of images.
-The problem of \emph{video} classification introduces a new dimension, prompting the question:
+The problem of \emph{video} classification introduces a new, temporal dimension that may be necessary to holistically analyze in order to perform proper classification. For instance, a video of a human subject may contain temporal concepts such as gestures or gait that cannot be extracted from a static image. This prompts the question:
  how can we best capture the additional information contained within the temporal dimension?   
 
-This question is not yet settled. In just the last two years, a variety of techniques have been investigated, including 3-dimensional convolutional neural networks (3D-CNN), and Long Short-Term Memory (LSTM). Additional techniques have been incorporated within these strategies, such as slow-fusion, optical-flow, and retraining of pre-trained ImageNet networks.
+There are indeed methods of preprocessing temporal information into a single 2-dimensional input~\cite{brox}, but a more attractive research goal is to develop a neural network that can discover temporal relationships on its own.
+There are multiple recent approaches towards this goal, but as of yet no consensus on which is superior.
+
+The difficulties in training neural networks on video input include the following: memory requirements (particularly if 3D convolutions are used), fewer public data sets, size of the data sets (for instance, the Sports-1M data set is $\approx 4TB$ large), and lack of consensus on which structural approaches are most effective.
+
+In just the last two years, a variety of techniques have been investigated, including 3-dimensional convolutional neural networks (3D-CNN), and Long Short-Term Memory (LSTM). Additional techniques have been appended to these strategies, such as slow-fusion, optical-flow, and retraining of pre-trained ImageNet networks.
 
 The purpose of this project is to examine and compare these approaches, while comparing to an additional, novel technique that we introduce that uses a CNN to extract temporal information from sequentially-generated ImageNet vectors. 
 
@@ -14,20 +19,20 @@ We make the following contributions:
 \item Introduce and analyze a novel 2D-CNN $\to$ 2D-CNN architecture for video classification. 
 \item Analyze the effect of replacing the first CNN with other ImageNet architectures than in previous implementations.
 \end{enumerate}
-\section{Motivation}
-%What problem are you trying to solve? Why is this hard right now?
-While deep convolutional neural networks are a leading technique for image classification, \emph{video} classification is not as developed.
-While it is certainly possible to simply run a neural network on each individual frame of a video, this sacrifices a wealth of temporal attributes such as movement, gestures, gait, etc.
-There are indeed methods of preprocessing temporal information into a single 2-dimensional input~\cite{brox}, but a more attractive research goal is to develop a neural network that can discover temporal relationships on its own.
-There are multiple recent approaches towards this goal, but as of yet no consensus on which is superior.
-
-The difficulties in training neural networks on video input include the following: memory requirements (particularly if 3D convolutions are used), fewer public data sets, size of the data sets (for instance, the Sports-1M data set is $\approx 4TB$ large), and lack of consensus on which structural approaches are most effective. 
-
-Our goal is to develop a deep neural network that classifies videos.
-We have settled on two main approaches for modeling the temporal information, discussed below: convolutional neural networks (3D-CNNs or CNN as temporal encoder) and recurrent neural networks that incorporate long short-term memory (LSTM).  
 
 \section{Background}
 Insert background here.
+%Summarize and cite
+
+Describe LSTM~\cite{lstm}.
+
+Describe ImageNet (Citation for VGG-net~\cite{vggnet} and ResNet~\cite{resnet})
+
+Describe Slow Fusion~\cite{}
+
+Describe Optical Flow~\cite{brox}
+
+Describe LSTM applied to feature vectors~\cite{}
 
 \subsection{Related Work}
 %What has been done in similar fields/problems? What are the limitations of current approaches?
@@ -84,4 +89,8 @@ The following is a set of proposed experiments, some of which we have started:
 
 \end{itemize}
 
+\subsection{Results}
+Insert results graphs here.
+
 \section{Conclusion}
+Insert conclusion here.

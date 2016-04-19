@@ -68,7 +68,7 @@ print(sys.COLORS.red ..  '==> defining some tools')
 local confusion = optim.ConfusionMatrix(classes)
 
 -- Log results to files
-local trainLogger = optim.Logger(paths.concat(opt.save,'train.log'))
+local trainLogger = optim.Logger(paths.concat(opt.save,'trainnew.log'))
 
 ----------------------------------------------------------------------
 print(sys.COLORS.red ..  '==> flattening model parameters')
@@ -190,7 +190,7 @@ local function train(trainData)
             mean_dfdx  = asgd(eval_E, w, run_passed, mean_dfdx, optimState)
      end
    end
-      collectgarbage()
+   collectgarbage()
    
    -- time taken
    time = sys.clock() - time
@@ -208,13 +208,14 @@ local function train(trainData)
    end
 
    -- save/log current net
---   local filename = paths.concat(opt.save, model_name)
---   os.execute('mkdir -p ' .. sys.dirname(filename))
---   print('==> saving model to '..filename)
---   model1 = model:clone()
---   netLighter(model1)
---   torch.save(filename, model1)
-
+   if epoch%20 == 1 then
+   local filename = paths.concat(opt.save, model_name)
+   os.execute('mkdir -p ' .. sys.dirname(filename))
+   print('==> saving model to '..filename)
+   model1 = model:clone()
+   netLighter(model1)
+   torch.save(filename, model1)
+   end
    -- next epoch
    confusion:zero()
    epoch = epoch + 1

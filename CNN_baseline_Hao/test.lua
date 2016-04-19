@@ -32,8 +32,7 @@ local nfeature = t.nfeature
 local confusion = optim.ConfusionMatrix(classes) 
 
 -- Logger:
-local testLogger = optim.Logger(paths.concat(opt.save,'test.log'))
-
+local testLogger = optim.Logger(paths.concat(opt.save,'testnew.log')) 
 -- Batch test:
 local inputs = torch.Tensor(opt.batchSize, nfeature, nframe) -- get size from data
 local targets = torch.Tensor(opt.batchSize)
@@ -78,7 +77,6 @@ function test(testData)
 	  
 	  preds = torch.mode(predarr)
 --      local preds = model:forward(inputs)
-	
       -- confusion
 --	  print(targets[i],preds[{i,{},1}])
       for i = 1,opt.batchSize do

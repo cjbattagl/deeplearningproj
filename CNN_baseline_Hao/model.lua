@@ -32,10 +32,10 @@ local noutputs = 101
 
 -- input dimensions: 
 local nframe = 48
-local nfeature = 1024
+local nfeature = 2048
 
 -- hidden units, filter sizes (for mlp only):
-local nstates = 256
+local nstates = 512
 
 ----------------------------------------------------------------------
 local classifier = nn.Sequential()
@@ -48,7 +48,7 @@ if opt.model == 'Linear' then
    --Create a CNN network as mentioned in the write-up
    --followed by a 2 layer fully connected layers
    --Use ReLU as yoru activations
-   model_name = 'mlp.net'
+   model_name = 'mlpnew.net'
 
    local mlp = nn.Sequential()
    -- stage 1 : FC layer 
@@ -78,7 +78,7 @@ end
 return {
    model = model,
    loss = loss,
-   nfeature = 1024,
+   nfeature = 2048,
    nframe = 48,
    model_name = model_name,
 }

@@ -105,12 +105,14 @@ local UCF101_list = true
 if UCF101_list == true then 
 
    -- training and testing data from UCF101 website
-   local TrainFeatureLabels = torch.load('/home/chih-yao/Downloads/feat_label_UCF101_train_1.t7')
+   -- local TrainFeatureLabels = torch.load('/home/chih-yao/Downloads/feat_label_UCF101_train_1.t7')
+   local TrainFeatureLabels = torch.load('/home/chih-yao/Downloads/data_UCF101_train_1.t7')
    TrainData = TrainFeatureLabels.featMats
    TrainData = ExtractFrames(TrainData, opt.rho)
    TrainTarget = TrainFeatureLabels.labels
 
-   local TestFeatureLabels = torch.load('/home/chih-yao/Downloads/feat_label_UCF101_test_1.t7')
+   -- local TestFeatureLabels = torch.load('/home/chih-yao/Downloads/feat_label_UCF101_test_1.t7')
+   local TestFeatureLabels = torch.load('/home/chih-yao/Downloads/data_UCF101_test_1.t7')
    TestData = TestFeatureLabels.featMats
    if AveragePred == false then 
       TestData = ExtractFrames(TestData, opt.rho)

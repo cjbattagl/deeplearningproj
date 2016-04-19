@@ -9,6 +9,7 @@ TODO:
 - [ ] Have all the feature vectors from all frames for testing, not just 50 frames per video 
 - [x] During testing, if you have at least two frames, input for the network should be feature vector from 1 to t-1
 - [x] Feedforward from each time step and average across all frames over a video to make prediction
+- [ ] Instead of averaging across all frames per video, can we have weightings?
 
 
 Note: 

@@ -4,7 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from matplotlib.pyplot import cm 
-
+from pylab import rcParams
+rcParams['figure.figsize'] = 9,4
 fontP = FontProperties()
 fontP.set_size('xx-small')
 #legend([plot1], "title", prop = fontP)
@@ -20,6 +21,8 @@ count = 0
 
 numcols = 10
 color=iter(cm.rainbow(np.linspace(0,1,numcols)))
+plt.figure(1)
+plt.yticks(np.arange(0, 101, 5.0))
 
 for mod in models:
   c=next(color)
@@ -29,7 +32,6 @@ for mod in models:
   numiters = max(len(testdata),len(traindata))
   t1 = np.arange(0, len(testdata), 1)
   t2 = np.arange(0, len(traindata), 1)
-  plt.figure(1)
   plt.plot(t1, testdata,c=c, label=modname+'/test',linewidth=2)
   plt.plot(t2, traindata,c=c, label=modname+'/train', linewidth=1)
   count+=2

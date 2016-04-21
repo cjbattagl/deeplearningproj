@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from pylab import rcParams
-rcParams['figure.figsize'] = 6, 5
+rcParams['figure.figsize'] = 9,4
 
 fontP = FontProperties()
 fontP.set_size('xx-small')

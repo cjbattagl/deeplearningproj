@@ -28,7 +28,7 @@ Describe LSTM~\cite{lstm}.
 
 Describe ImageNet (Citation for VGG-net~\cite{vggnet} and ResNet~\cite{resnet})
 
-Describe Slow Fusion~\cite{}
+Describe Slow Fusion~\cite{cnnvid}
 
 Describe Optical Flow~\cite{brox}
 
@@ -52,13 +52,15 @@ the third, temporal dimension in different ways: Convolutional Neural
 Networks (3D-CNNs or CNN as temporal encoder)~\cite{stf,cnnvid,cnnMNLS} and Long
 Short-Term Memory /Recurrent Neural Networks (Regular or Multi-dimensional LSTM)~\cite{ltrcn}. 
 
+\subsection{3D CNN}
 % 3D-CNNs
-Using a 3D-CNN, it is possible to build a classifier on a moving window
+Using a 3D Convolutional Neural Network, it is possible to build a classifier on a moving window
 of frames using 3D convolutions to extract useful local movement information. However, 3D-CNNs introduce a massive memory blowup that may make training infeasible on GPUs.
 To address this, we would like to use the slow-fusion model~\cite{cnnvid} instead of 3D kernels. In addition, we also plan to apply 3D kernels to one or two layers to check the improvement if we don't meet the memory problem. On the other hand, an LSTM/RNN approach is able to build the classifier with long term memory using a much larger number of frames at once. Combining a slow-fusion CNN with LSTM would combine the local movement information with long-term memory, with possible gains in learning.
 
 
 % LSTM
+\subsection{RNN-LSTM}
 Furthermore, the current LSTM model is built on the fully-connected
 layer, which does not conserve spatial information. We would like to examine the 
 effectiveness of adding the LSTM network at earlier layers.
@@ -68,6 +70,7 @@ this challenge, we would like to apply the multi-dimensional LSTM
 \cite{byeon2015scene} to efficiently take advantage of the spatial
 information following an early convolution layer. 
 
+\subsection{Temporal CNN}
 % CNN + CNN (1D convolution) ==> Yan
 Other than the LSTM model for the temporal encoder, convolutional architecture(CNN) has also been applied to model sentences using a pre-trained embedding of words ~\cite{cnnSC,cnnMNLS}. We would like to implement this idea into the video classification. First, a pre-trained CNN architecture can be applied as spatial encoder to each frame to extract features. Furthermore, 1D or 2D CNN can be applied as the temporal encoder. For 1D CNN, we take 1D convolution on a sliding window of the concatenated feature vectors from the spatial decoder. For 2D CNN, we apply 2D convolution and 2D max-pooling directly on the a sliding window of the feature matrix from the spatial encoder. 
 
@@ -90,7 +93,19 @@ The following is a set of proposed experiments, some of which we have started:
 \end{itemize}
 
 \subsection{Results}
-Insert results graphs here.
-
+\begin{table}[h!]
+ \caption{Best test results for a given train-test split of UCF101~\cite{ucf101}}
+\centering
+ \begin{tabular}{||l r||}
+ \hline
+ CNN (ResNet) & 74.97\% \\
+ CNN-LSTM (ResNet) & 79.39\% \\
+ TCNN (Res2L) & 75.1\% \\
+ LRCN~\cite{byeon2015scene} & 71.12\% \\
+ C3D~\cite{stf} & 85.2\% \\
+ SlowFusion~\cite{cnnvid} & 65.4\%\\ [0.5ex]
+ \hline
+ \end{tabular}
+\end{table}
 \section{Conclusion}
 Insert conclusion here.

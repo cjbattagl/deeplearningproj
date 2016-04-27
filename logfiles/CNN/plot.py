@@ -32,5 +32,5 @@ for mod in models:
   plt.plot(t2, traindata, styles[count+1], label=modname+'/train', linewidth=1)
   count+=2
 plt.legend(loc=8,ncol=4,prop=fontP)
+plt.savefig("out.png",transparent=True,dpi=300,bbox_inches="tight")
 #loc='upper center', bbox_to_anchor=(0.5, 1.05)
-plt.savefig("out.png", bbox_inches="tight")

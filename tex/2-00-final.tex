@@ -115,15 +115,17 @@ The following is a set of proposed experiments, some of which we have started:
 
 \subsection{Results}
 \begin{table}[h!]
- \caption{Best test results for a given train-test split of UCF101~\cite{ucf101}, with our results followed by results from the literature.}
+ \caption{Best test results for a given train-test split of UCF101~\cite{ucf101}}
 \centering
  \begin{tabular}{||l l||}
  \hline
+ \textit{Our Results} & \\ \hline
  CNN (ResNet) & 74.97\% \\
  CNN-LSTM (ResNet) & \textbf{79.39\%} \\
  TCNN (Res2L) & 75.1\% \\ \hline
+ \textit{Published Results} & \\ \hline
  LRCN~\cite{byeon2015scene} & 71.12\% \\
- C3D~\cite{stf} & \textbf{85.2\%} \\
+ C3D~\cite{stf} & \textbf{85.2\%}\footnote{Uses a specially trained ImageNet} \\
  SlowFusion~\cite{cnnvid} & 65.4\%\\ [0.5ex]
  \hline
  \end{tabular}

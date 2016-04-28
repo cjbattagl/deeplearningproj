@@ -35,4 +35,4 @@ for mod in models:
   count+=2
 plt.legend(loc=8,ncol=4,prop=fontP)
 #loc='upper center', bbox_to_anchor=(0.5, 1.05)
-plt.savefig("out.png",transparent=True,dpi=300,bbox_inches="tight")
+plt.savefig("out.pdf",transparent=True,dpi=300,bbox_inches="tight")

@@ -36,4 +36,4 @@ for mod in models:
   plt.plot(t2, traindata,c=c, label=modname+'/train', linewidth=1)
   count+=2
 plt.legend(loc=8,ncol=4,prop=fontP)
-plt.savefig("out.png",transparent=True,dpi=300,bbox_inches="tight")
+plt.savefig("out.pdf",transparent=True,dpi=300,bbox_inches="tight")

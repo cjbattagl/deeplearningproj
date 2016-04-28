@@ -1,7 +1,7 @@
 \section{Introduction}
-Deep convolutional neural networks are currently the leading technique for image classification; 
-convolutional layers capture patterns in spatial locality, while deep topologies can capture the compositional nature of images.
-The problem of \emph{video} classification introduces a new, temporal dimension is not leveraged by standard 2D CNNs. For instance, a video of a human subject may contain temporal concepts such as gestures or gait that cannot be extracted from a single frame. This prompts the question:
+Deep convolutional neural networks are currently the leading technique for image classification.
+Convolutional layers capture patterns with spatial locality, while deep topologies capture the compositional nature of images.
+The problem of \emph{video} classification introduces a new, temporal dimension not leveraged by typical 2D CNNs. For instance, a video of a human subject may contain temporal concepts such as gestures or gait that cannot be extracted from a single frame. This prompts the question:
  how can we best capture the additional information contained within this temporal dimension?   
 
 There are indeed methods of preprocessing temporal information into a single 2-dimensional input~\cite{brox}, but a more attractive research goal is to develop a neural network that can discover temporal relationships on its own.
@@ -11,7 +11,7 @@ The difficulties in training neural networks on video input include the followin
 
 In just the last two years, a variety of techniques have been investigated, including 3-dimensional convolutional neural networks (3D-CNN) and Long Short-Term Memory (LSTM). Additional techniques have been incorporated within these strategies, such as slow-fusion, optical-flow, and retraining of pre-trained ImageNet networks.
 
-The purpose of this project is to examine and compare these approaches, while comparing to an additional, novel technique that we introduce that uses a CNN to extract temporal information from sequentially-generated ImageNet vectors. 
+The purpose of this project is to examine and compare these approaches, while comparing to an additional, novel technique that we introduce that uses a second CNN layer to extract temporal information from sequentially-generated ImageNet vectors. 
 
 We make the following contributions:
 \begin{enumerate}
@@ -114,6 +114,30 @@ The following is a set of proposed experiments, some of which we have started:
 \end{itemize}
 
 \subsection{Results}
+In~\RefFigure{fig:cnntest} we see the training and testing error for the baseline model. The ResNet model performs over 10\% better than the NIN model, which is about the difference we'd expect for static image classification. 
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\linewidth]{figs/CNNout}
+  \caption{CNN Training and Test Error}
+  \label{fig:cnntest}
+\end{figure}
+
+We present the training results for the LSTM model in~\RefFigure{fig:lstmtest}. The models vary in which ImageNet model is used for the first layet. Again, we see that ResNet performs the strongest, and that the deeper ResNet networks perform incrementally better than shallower ones. 
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\linewidth]{figs/RNNout}
+  \caption{LSTM Training and Test Error}
+  \label{fig:lstmtest}
+\end{figure}
+
+The testing results for our novel TCNN method are presented in~\RefFigure{fig:tnntest}. Using ResNet followed by 2 convolutional layers provided the strongest results, followed by using a single convolutional layer. 
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\linewidth]{figs/TCNNout}
+  \caption{Temporal CNN Training and Test Error}
+  \label{fig:tnntest}
+\end{figure}
+
 \begin{table}[h!]
  \caption{Best test results for a given train-test split of UCF101~\cite{ucf101}}
 \centering
@@ -130,5 +154,10 @@ The following is a set of proposed experiments, some of which we have started:
  \hline
  \end{tabular}
 \end{table}
+
 \section{Conclusion}
-Insert conclusion here.
+Perhaps the most noticeable result is that the quality of the first convolutional layer is very important. We were able to see excellent improvements in quality just by using ResNet in place of earlier ImageNet models. While we used a standard pretrained ImageNet model for this layer, we might expect improvements of 5-10\% by further training this first layer on relevant video classes. 
+
+Data volume is very important. We had 10000 videos in our data set, but C3D was able to train on one million videos, as well as a proprietary Facebook data set.
+
+The temporal CNN was not as effective as the LSTM model, and in fact only performed incrementally better than the raw CNN model. Performing convolutions across feature vectors is tricky. 

@@ -84,7 +84,7 @@ Our baseline model is constructed from the pretrained ImageNet CNN. We fine-tune
 % LSTM
 \subsection{RNN with LSTM}
 An RNN with LSTM approach is able to build the classifier with long term memory using a much larger number of frames at once. 
-Also for applications involve temporal informations, it is natural to apply RNN. In this approach, we basically follow the work from ~\cite{ltrcn} and implement the RNN with LSTM which is designed for taking image features as input. The CNN is this LRCN model serves as a translator which converts the raw image pixel into meaningful representations for machines. On the other hand, the RNN serves as the decision module to decide whether if this video belongs to a certain types of classes. 
+Also for applications involve temporal informations, it is natural to apply RNN. In this approach, we basically follow the work from ~\cite{ltrcn} and implement the RNN with LSTM which is designed for taking image features as input. The CNN is this LRCN model serves as a translator which converts the raw image pixel into meaningful representations for machines. On the other hand, the RNN serves as the decision module to decide whether if this video belongs to a certain types of classes. The RNN will learn the genetic representation of feature vectors across all frames for all vidoes. It learns to identify the correlation between feature vectors and the importance of some elements for different activities. 
 This approach is illustrated in~\reffig{fig:lcrn}.
 \begin{figure}
   \centering
@@ -121,9 +121,8 @@ We target the well-established data set \emph{UCF-101}~\cite{ucf101}, which cont
 
 \subsection{Experimental Methodology}
 %What specific experiments are you planning on conducting? How are they testing the specific problem you want to solve?
-We performed out experiments on \dots GPUs.
-
-To compute our testing error in a way that is comparable with other publications, we used given training/testing data splits from the UCF-101 data set~\cite{ucf101}. Within our three models (Baseline CNN, LSTM, TCNN) we used a wide variety of pre-trained ImageNet models as the first CNN layer. These models are labeled in our experimental results. 
+We performed our experiments on personal computers with Intel i7-6700K, 32 GB RAM, and Nvidia GTX 980 GPU. At the begining of the experiments when we moved on to UCF101 dataset, we randomly divided the entire dataset into 5 folds and achieve over $94\%$ accuracy at early stage using NIN model as our feature extractor. 
+To compute our testing error in a way that is comparable with other publications, we used the first given training/testing data splits from the UCF-101 data set~\cite{ucf101}. Within our three models (Baseline CNN, LSTM, TCNN) we used a wide variety of pre-trained ImageNet models as the first CNN layer. These models are labeled in our experimental results. 
 
 % The following is a set of proposed experiments, some of which we have started:
 % \begin{itemize}
@@ -136,7 +135,12 @@ To compute our testing error in a way that is comparable with other publications
 % \end{itemize}
 
 \subsection{Results}
-In Figures~\ref{fig:democorrect}--\ref{fig:demo} we show examples of the video output that our model produces. The first label is the result from the TCNN model, and the second label from the LSTM model. The first figure shows a correct classification by both models, the second incorrect classification by both models. In the third figure, the TCNN model makes a misprediction while the LSTM model is correct.  
+In Figures~\ref{fig:democorrect}--\ref{fig:demo} we show examples of the video output that our model produces. The first label is the result from the RNN model, and the second label from the T-CNN model. The first figure shows a correct classification by both models, the second incorrect classification by both models. In the third figure, the RNN model makes a misprediction while the T-CNN model is correct.  
+
+\textcolor{red}{We should be able to elaborate and discuss more for the example images here. We need more images...} 
+
+
+
 \begin{figure}
   \centering
   \includegraphics[width=0.8\linewidth]{figs/democorrect}

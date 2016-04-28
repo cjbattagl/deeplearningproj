@@ -136,13 +136,29 @@ To compute our testing error in a way that is comparable with other publications
 % \end{itemize}
 
 \subsection{Results}
-In~\RefFigure{fig:demo} we show an example of the video output that our model produces. The first label is the result from the TCNN model, and the second label from the LSTM model. In this case, the TCNN model made a misprediction. 
+In Figures~\ref{fig:democorrect}--\ref{fig:demo} we show examples of the video output that our model produces. The first label is the result from the TCNN model, and the second label from the LSTM model. The first figure shows a correct classification by both models, the second incorrect classification by both models. In the third figure, the TCNN model makes a misprediction while the LSTM model is correct.  
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\linewidth]{figs/democorrect}
+  \caption{Example of video correctly classified by both models.}
+  \label{fig:democorrect}
+\end{figure}
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\linewidth]{figs/demoincorrect}
+  \caption{Example of video incorrectly classified by both models (the correct class is PizzaThrowing)}
+  \label{fig:demoincorrect}
+\end{figure}
+
 \begin{figure}
   \centering
   \includegraphics[width=0.8\linewidth]{figs/demo}
-  \caption{Example of video output.}
+  \caption{Example of video correctly classified by LSTM, incorrectly classified by TCNN. }
   \label{fig:demo}
 \end{figure}
+
 
 In~\RefFigure{fig:cnntest} we see the training and testing error for the baseline model. The ResNet model performs over 10\% better than the NIN model, which is about the difference we'd expect for static image classification. 
 \begin{figure}

@@ -24,16 +24,13 @@ We make the following contributions:
 While neural networks were once limited to small, toy applications, 
 their power has increased dramatically due to the explosion in data 
 due to social media and the rise in computational power due to GPUs. 
-The ImageNet data set~\cite{imagenet} has become a standard image-classification benchmark, with improvements each year from architectural tweaks~\cite{alexnet,vggnet,nin,resnet}.
+The ImageNet data set~\cite{imagenet}, containing millions of labeled images, has become a standard image-classification benchmark, with improvements each year from architectural tweaks~\cite{alexnet,vggnet,nin,resnet}.
 
-With video input we must process a collection of frames. 
+With video input we must process a collection of frames. Incorporating the changes between these frames then becomes the new research problem. \emph{Slow fusion} is one of the first approaches taken, which uses multiple windows of frames. Each window is used as an input to a separate CNN, which is then combined with the results of the other convolutions into a later CNN~\cite{cnnvid}. This allows for short-term and longer-term temporal information to be taken into account. 
+
+If a video is taken to be a projection of 3D objects onto a 2D plane, the point-wise velocities of the projected objects corresponds to a 2D motion field. Optical flow is an approximation of this field produced through analyzing consecutive frames~\cite{brox}, and is a popular feature in the video classification approaches we have examined. Unfortunately, computing optical flow accurately is numerically intensive. 
+
 Describe LSTM~\cite{lstm}.
-
-Describe Slow Fusion~\cite{cnnvid}
-
-Describe Optical Flow~\cite{brox}
-
-Describe LSTM applied to feature vectors~\cite{}
 
 \subsection{Related Work}
 %What has been done in similar fields/problems? What are the limitations of current approaches?

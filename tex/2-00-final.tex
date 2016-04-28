@@ -21,12 +21,13 @@ We make the following contributions:
 \end{enumerate}
 
 \section{Background}
-Insert background here.
-%Summarize and cite
+While neural networks were once limited to small, toy applications, 
+their power has increased dramatically due to the explosion in data 
+due to social media and the rise in computational power due to GPUs. 
+The ImageNet data set~\cite{imagenet} has become a standard image-classification benchmark, with improvements each year from architectural tweaks~\cite{alexnet,vggnet,nin,resnet}.
 
+With video input we must process a collection of frames. 
 Describe LSTM~\cite{lstm}.
-
-Describe ImageNet (Citation for VGG-net~\cite{vggnet} and ResNet~\cite{resnet})
 
 Describe Slow Fusion~\cite{cnnvid}
 
@@ -173,7 +174,7 @@ The testing results for our novel TCNN method are presented in~\RefFigure{fig:tn
 \section{Conclusion}
 Perhaps the most noticeable result is that the quality of the first convolutional layer is very important. We were able to see excellent improvements in quality just by using ResNet in place of earlier ImageNet models. While we used a standard pretrained ImageNet model for this layer, we might expect improvements of 5-10\% by further training this first layer on relevant video classes. 
 
-Data volume is very important. We had 10000 videos in our data set, but C3D was able to train on one million videos, as well as a proprietary Facebook data set.
+Data volume is very important. We had 10000 videos in our data set, but C3D was able to train on one million videos, as well as a proprietary Facebook data set. In earlier work, Karpathy, et al. demonstrated that additional training on the Sports-1M data-set raised their testing accuracy on UCF-101 from 41.3\% to 65.4\%~\cite{cnnvid}, so we would expect large gains from training on a larger data set as well.
 
 The temporal CNN was not as effective as the LSTM model, and in fact only performed incrementally better than the raw CNN model. Performing convolutions across feature vectors is tricky. 
 

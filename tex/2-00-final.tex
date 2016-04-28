@@ -30,7 +30,11 @@ With video input we must process a collection of frames. Incorporating the chang
 
 If a video is taken to be a projection of 3D objects onto a 2D plane, the point-wise velocities of the projected objects corresponds to a 2D motion field. Optical flow is an approximation of this field produced through analyzing consecutive frames~\cite{brox}, and is a popular feature in the video classification approaches we have examined. Unfortunately, computing optical flow accurately is numerically intensive. 
 
-A more natural approach is to simply extend the 2-dimensional CNN to 3 dimensions, where the third dimension is temporal. While applying a 2D convolution kernel to a 2D or 3D volume will produce a 2D volume, applying a 3D convolution kernel to a 3D volume produces another 3D volume, as illustrated in~\RefFigure{fig:3dconv}. This allows the model to incorporate the temporal dimension as an intrinsic aspect at all levels of the network, as opposed to flattening it out early on. 
+A more natural idea is the use of Recurrent Neural Networks (RNNs), which are neural networks that allow self-loops, and thus unfold over a time dimension. A crucial innovation for RNNs is Long Short-Term Memory(LSTM)~\cite{LSTM}, which uses memory cells to store, modify,
+and access an internal state. While a standard RNN is limited to storing parameters related to a fixed window of time, LSTMs can discover long-range
+temporal relationships. The internal mechanisms of LSTM allow this discovery to selectively store and forget the necessary information, allowing a limited number of parameters to represent a global view of the data. 
+
+Another elegant idea is to simply extend the 2-dimensional CNN to 3 dimensions, where the third dimension is temporal. While applying a 2D convolution kernel to a 2D or 3D volume will produce a 2D volume, applying a 3D convolution kernel to a 3D volume produces another 3D volume, as illustrated in~\RefFigure{fig:3dconv}. This allows the model to incorporate the temporal dimension as an intrinsic aspect at all levels of the network, as opposed to flattening it out early on. 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=0.7\linewidth]{figs/3dconv}
@@ -38,20 +42,21 @@ A more natural approach is to simply extend the 2-dimensional CNN to 3 dimension
   \label{fig:3dconv}
 \end{figure}
 
-Another approach uses Recurrent Neural Networks (RNNs), which are neural networks which allow self-loops, and thus unfold over a time dimension. A crucial innovation for RNNs is Long Short-Term Memory(LSTM)~\cite{LSTM}, which uses memory cells to store, modify,
-and access an internal state. While a standard RNN is limited to storing parameters related to a fixed window of time, LSTMs can discover long-range
-temporal relationships. The internal mechanisms of LSTM allow this discovery to selectively store and forget the necessary information, allowing a limited number of parameters to represent a global view of the data. 
-
 \subsection{Related Work}
 %What has been done in similar fields/problems? What are the limitations of current approaches?
 %Recurrent long-term convolutional models are most frequently used in speech and language applications, but it is possible to apply them to visual time-series data. 
-One popular approach is to apply a 2D-CNN to each frame of the video, followed by an RNN with LSTM~\cite{ltrcn}. 
-Another approach is slow-fusion, which applies multiple frames to the input at the same time~\cite{cnnvid}. This approach, applied to a simply CNN, shows only a modest improvement over CNN single-frame learning.
+The \emph{slow fusion} approach, mentioned earlier, has been applied to video input by Karpathy, et al~\cite{cnnvid}. This approach, applied to a simple CNN, shows only a modest improvement over CNN single-frame learning.
+
+Using an LSTM has also been implemented; Donahue, et al. apply a 2D-CNN to each frame of the video, followed by an RNN with LSTM~\cite{ltrcn}. 
+Ng, et al. demonstrate that instead of training on `short snippets' (such as in~\cite{cnnvid,stf}), an LSTM approach allows us to train on entire videos efficiently~\cite{snip}, and achieve state-of-the-art performance on several data sets. 
+
+Hu, et al \cite{cnnMNLS} demonstrate in natural language processing that instead of using an RNN (or LSTM), a CNN can also be used as temporal encoder to extract sequences of information from sentences. This is an innovation that we will apply later with our novel `TCNN' network. 
 % Tran, et al. demonstrated that using 3D-CNNs instead of 2D can achieve state-of-the-art results on several data sets~\cite{stf}.
-Tran, et al. demonstrated that using a 3D Convolutional Neural Network, it is possible to build a classifier on a moving window of frames using 3D convolutions to extract useful local movement information, and it can achieve state-of-the-art results on several data sets~\cite{stf}. However, 3D-CNNs introduce a massive memory blowup that may make training infeasible on GPUs.
-Ng, et al. demonstrate that instead of training on `short snippets' (such as in~\cite{cnnvid,stf}), an LSTM approach allows us to train on entire videos efficiently~\cite{snip}, and achieves state-of-the-art performance on several data sets. Furthermore, Hu, et al \cite{cnnMNLS} demonstrate in natural language processing that instead of using another RNN (or LSTM), CNN can also be used as temporal encoder to extract sequence of information from sentenses. 
+
+Tran, et al. demonstrate that by using a 3D Convolutional Neural Network, it is possible to build a classifier on a moving window of frames using 3D convolutions to extract useful local movement information, and it can achieve state-of-the-art results on several data sets~\cite{stf}. However, 3D-CNNs introduce a massive memory blowup that may make training infeasible on GPUs.
 
 Many of these papers incorporate additional features such as optical flow~\cite{brox} and improved dense trajectory, both of which involve optimization techniques applied to subsets of frames. 
+
 \section{Approach and Techniques}
 %What is your proposed approach to solving the problem? How does it compare to existing approaches?
 %Note: It's OK for these projects to be similar to existing approaches, although if you want to publish the results they will have to have some novelty.
@@ -99,7 +104,7 @@ This approach is illustrated in~\reffig{fig:lcrn}.
 
 \subsection{Temporal CNN}
 % CNN + CNN (1D convolution) ==> Yan
-In addition to using the LSTM model for the temporal encoder, convolutional architecture(CNN) has also been applied to model sentences using a pre-trained embedding of words ~\cite{cnnSC,cnnMNLS}. We would like to explore this idea and see how it performs on high level applications, like video classification. First, similar to what we did for LCRN model described above, a pre-trained CNN architecture can be applied as spatial encoder to each frame to extract features. 
+In addition to using the LSTM model for the temporal encoder, convolutional architecture(CNN) has also been applied to model sentences using a pre-trained embedding of words ~\cite{cnnSC,cnnMNLS}. We explore this idea and to see how it performs on high level applications such as video classification. First, similar to what we did for LCRN model described above, a pre-trained CNN architecture can be applied as spatial encoder to each frame to extract features. 
 Secondly, we concatenated feature vectors into a feature matrix and apply CNN on this particular temporal feature matrix. The CNN with 1D or 2D convolutional kernels will be applied to the temporal feature matrix separately to verify their influences. For 1D CNN, we take 1D convolution on a sliding window of the concatenated feature vectors along with the temporal direction. For 2D CNN, we apply 2D convolution and 2D max-pooling directly on the a sliding window of the feature matrix from the spatial encoder. This approach is illustrated in~\reffig{fig:tnn}.
 The idea behind this temporal CNN is that, CNN is known for extracting the stationary informations in the image (or feature matrix). Using this feature of CNN and apply directly on feature matrices contain temporal information can be interpreted as: we are exploring some of the distinct feature elements that consistently show up for most of the feature vectors in different time steps, and with different hierarchical layers from CNN to explore the correlation of these elements. All these distinct features and their correlations in each of the video will determine which type of activities for this video. 
 
@@ -112,21 +117,23 @@ The idea behind this temporal CNN is that, CNN is known for extracting the stati
 
 \section{Experiments}
 \subsection{Data Set}
-We propose to begin with a well-established data set such as UCF-101~\cite{ucf101}, which contains 13320 videos from 101 action categories. For early training purposes we may use only a small subset of these actions, such as a subset of 10 sports. The ultimate goal is applying our framework to Sports-1M~\cite{cnnvid}, which contains around 1 million YouTube videos belonging to 487 categories. In this way, we can compare our methods with the current state-of-the-art methods.
+We target the well-established data set \emph{UCF-101}~\cite{ucf101}, which contains 13320 videos from 101 action categories. For early training purposes we used a small subset of 10 sports, and then applied to the entire dataset. The ultimate goal, not yet completed, is to apply our framework to Sports-1M~\cite{cnnvid} dataset, which contains around 1 million YouTube videos belonging to 487 categories.
 
 \subsection{Experimental Methodology}
 %What specific experiments are you planning on conducting? How are they testing the specific problem you want to solve?
-For training we plan to use the Jinx cluster at Georgia Tech. Each node is equipped with 2 nVidia Tesla M2090 ``Fermi'' GPU cards, and CPU nodes with large memory are available.
+We performed out experiments on \dots GPUs.
 
-The following is a set of proposed experiments, some of which we have started:
-\begin{itemize}
-\item Move 2D-LSTM within convolution layers to see if this better incorporates spatial information.
-\item Incorporate slow fusion within a 2D-CNN to see if this input approach yields higher accuracy.
-\item Replace a 2D-CNN-LSTM network with a Shallow ResNet-LSTM network (with or without slow fusion)-- to see if ResNet provides significant gains over the AlexNet used by existing studies.
-\item Study if slow-fusion \emph{combined} with optical-flow input provides significantly better results than either approach on its own.
-\item Using CNN + LSTM as base line compare with the performance from CNN + 1D-CNN/2D-CNN.
+To compute our testing error in a way that is comparable with other publications, we used given training/testing data splits from the UCF-101 data set~\cite{ucf101}. Within our three models (Baseline CNN, LSTM, TCNN) we used a wide variety of pre-trained ImageNet models as the first CNN layer. These models are labeled in our experimental results. 
 
-\end{itemize}
+% The following is a set of proposed experiments, some of which we have started:
+% \begin{itemize}
+% \item Move 2D-LSTM within convolution layers to see if this better incorporates spatial information.
+% \item Incorporate slow fusion within a 2D-CNN to see if this input approach yields higher accuracy.
+% \item Replace a 2D-CNN-LSTM network with a Shallow ResNet-LSTM network (with or without slow fusion)-- to see if ResNet provides significant gains over the AlexNet used by existing studies.
+% \item Study if slow-fusion \emph{combined} with optical-flow input provides significantly better results than either approach on its own.
+% \item Using CNN + LSTM as base line compare with the performance from CNN + 1D-CNN/2D-CNN.
+
+% \end{itemize}
 
 \subsection{Results}
 In~\RefFigure{fig:demo} we show an example of the video output that our model produces. The first label is the result from the TCNN model, and the second label from the LSTM model. In this case, the TCNN model made a misprediction. 
@@ -187,3 +194,5 @@ The temporal CNN was not as effective as the LSTM model, and in fact only perfor
 
 One of the possible future work can be using multi-dimensional LSTM. The current LSTM model is built on the fully-connected layer, which does not conserve spatial information. We would like to examine the effectiveness of adding the LSTM network at earlier layers. If we apply LSTM directly after the convolution layer, the input to LSTM model is actually multi-dimensional tensor. To address this challenge, we would like to apply the multi-dimensional LSTM
 \cite{byeon2015scene} to efficiently take advantage of the spatial information following an early convolution layer. 
+
+Our code is available at~\url{http://github.com/cjbattagl/deeplearningproj}.

@@ -30,7 +30,17 @@ With video input we must process a collection of frames. Incorporating the chang
 
 If a video is taken to be a projection of 3D objects onto a 2D plane, the point-wise velocities of the projected objects corresponds to a 2D motion field. Optical flow is an approximation of this field produced through analyzing consecutive frames~\cite{brox}, and is a popular feature in the video classification approaches we have examined. Unfortunately, computing optical flow accurately is numerically intensive. 
 
-Describe LSTM~\cite{lstm}.
+A more natural approach is to simply extend the 2-dimensional CNN to 3 dimensions, where the third dimension is temporal. While applying a 2D convolution kernel to a 2D or 3D volume will produce a 2D volume, applying a 3D convolution kernel to a 3D volume produces another 3D volume, as illustrated in~\RefFigure{fig:3dconv}. This allows the model to incorporate the temporal dimension as an intrinsic aspect at all levels of the network, as opposed to flattening it out early on. 
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.7\linewidth]{figs/3dconv}
+  \caption{Applying a 3D convolution produces another 3D volume.}
+  \label{fig:3dconv}
+\end{figure}
+
+Another approach uses Recurrent Neural Networks (RNNs), which are neural networks which allow self-loops, and thus unfold over a time dimension. A crucial innovation for RNNs is Long Short-Term Memory(LSTM)~\cite{LSTM}, which uses memory cells to store, modify,
+and access an internal state. While a standard RNN is limited to storing parameters related to a fixed window of time, LSTMs can discover long-range
+temporal relationships. The internal mechanisms of LSTM allow this discovery to selectively store and forget the necessary information, allowing a limited number of parameters to represent a global view of the data. 
 
 \subsection{Related Work}
 %What has been done in similar fields/problems? What are the limitations of current approaches?

@@ -114,6 +114,14 @@ The following is a set of proposed experiments, some of which we have started:
 \end{itemize}
 
 \subsection{Results}
+In~\RefFigure{fig:demo} we show an example of the video output that our model produces. The first label is the result from the TCNN model, and the second label from the LSTM model. In this case, the TCNN model made a misprediction. 
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\linewidth]{figs/demo}
+  \caption{Example of video output.}
+  \label{fig:demo}
+\end{figure}
+
 In~\RefFigure{fig:cnntest} we see the training and testing error for the baseline model. The ResNet model performs over 10\% better than the NIN model, which is about the difference we'd expect for static image classification. 
 \begin{figure}
   \centering

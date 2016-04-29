@@ -172,7 +172,11 @@ In~\RefFigure{fig:cnntest} we see the training and testing error for the baselin
   \label{fig:cnntest}
 \end{figure}
 
-We present the training results for the LSTM model in~\RefFigure{fig:lstmtest}. The models vary in which ImageNet model is used for the first layet. Again, we see that ResNet performs the strongest, and that the deeper ResNet networks perform incrementally better than shallower ones. 
+We present the training results for the LSTM model in~\RefFigure{fig:lstmtest}. The models vary in which ImageNet model is used for the first layer. Again, we see that ResNet performs the strongest, and we also expect that the deeper ResNet networks perform incrementally better than shallower ones. During the training for RNN with LSTM, we also compare the performance if we use GRU, yet the results are very similar. No significant difference observed during this experiment. 
+
+We also tried various learning rate and settle for $5e-4$ when using adam as optimizer. Using adam as optimizer gives faster and the best convergence. It requires relatively smaller learning rate compared with using SGD. 
+
+The number of the hidden layers are also important to learn the generic representation of the videos. Generally, hidden layer using the half of the dimension of the feature vector from CNN produce the best performance. Stacked of LSTM doesn't always help, but will not make the testing accuracy worse. 
 \begin{figure}
   \centering
   \includegraphics[width=1.0\linewidth]{figs/RNNout}
@@ -181,6 +185,10 @@ We present the training results for the LSTM model in~\RefFigure{fig:lstmtest}. 
 \end{figure}
 
 The testing results for our novel TCNN method are presented in~\RefFigure{fig:tnntest}. Using ResNet followed by 2 convolutional layers provided the strongest results, followed by using a single convolutional layer. 
+
+
+\textcolor{red}{Min-Hung or Hao, please elaborate on the Table 1...} 
+
 \begin{figure}
   \centering
   \includegraphics[width=1.0\linewidth]{figs/TCNNout}
@@ -205,12 +213,12 @@ The testing results for our novel TCNN method are presented in~\RefFigure{fig:tn
  \end{tabular}
 \end{table}
 
-\section{Conclusion}
-Perhaps the most noticeable result is that the quality of the first convolutional layer is very important. We were able to see excellent improvements in quality just by using ResNet in place of earlier ImageNet models. While we used a standard pretrained ImageNet model for this layer, we might expect improvements of 5-10\% by further training this first layer on relevant video classes. 
+\section{Conclusion and Future Work}
+Perhaps the most noticeable result is that the quality of the first convolutional layer is very important. We were able to see excellent improvements in quality just by using ResNet in place of earlier ImageNet models. While we used a standard pretrained ImageNet model for this layer, we might expect improvements by further training this first layer on relevant video classes. 
 
-Data volume is very important. We had 10000 videos in our data set, but C3D was able to train on one million videos, as well as a proprietary Facebook data set. In earlier work, Karpathy, et al. demonstrated that additional training on the Sports-1M data-set raised their testing accuracy on UCF-101 from 41.3\% to 65.4\%~\cite{cnnvid}, so we would expect large gains from training on a larger data set as well.
+Data volume is very important. We had 10000 videos in our data set, but C3D was able to train on one million videos, as well as a proprietary Facebook data set. In earlier work, Karpathy, et al. demonstrated that additional training on the Sports-1M data-set raised their testing accuracy on UCF-101 from 41.3\% to 65.4\%~\cite{cnnvid}, so we would expect large gains from training on a larger data set as well. We will explore this direction in the future work. 
 
-The temporal CNN was not as effective as the LSTM model, and in fact only performed incrementally better than the raw CNN model. Performing convolutions across feature vectors is tricky-- while one dimension corresponds to temporal changes of the feature vectors, the other dimension (between elements of a given feature vector) does not have a clear interpretation. In addition, tuning the size of the convolution kernel (or alternatively, tuning the granularity with which frames are chosen) is a large experiment which we did not have time to perform. 
+The temporal CNN was not as effective as the LSTM model, and in fact only performed incrementally better than the raw CNN model. Performing convolutions across feature vectors is tricky-- while one dimension corresponds to temporal changes of the feature vectors, the other dimension (between elements of a given feature vector) does not have a clear interpretation. In addition, tuning the size of the convolution kernel (or alternatively, tuning the granularity with which frames are chosen) is a large experiment which we did not have time and the hardware to perform. As the layer of temporal CNN grows, the requirement of memory will increase drastically. However, as we move along after the project poster, we achieved over 77\% accuracy for Temporal CNN by training on CPU, and we expect to perform at least similar to the RNN after we experiment temporal CNN with more layers. 
 
 
 Ultimately, we have demonstrated excellent performance of close to 80\% classification accuracy on a video set of 101 classes. We have confirmed the efficacy of previous proposed methods while experimenting with the novel TCNN model. By using the newest ImageNet models we were able to greatly exceed previous published results. 
@@ -218,4 +226,4 @@ Ultimately, we have demonstrated excellent performance of close to 80\% classifi
 Future work would include training on larger data sets such as Sports-1M and fine-tuning the TCNN model. Another possible future work would be using a \emph{multi-dimensional} LSTM. The current LSTM model is built on the fully-connected layer, which does not conserve spatial information. We would like to examine the effectiveness of adding the LSTM network at earlier layers. If we apply LSTM directly after the convolution layer, the input to LSTM model is actually multi-dimensional tensor. To address this challenge, we would like to apply the multi-dimensional LSTM
 \cite{byeon2015scene} to efficiently take advantage of the spatial information following an early convolution layer. 
 
-Our code is available at~\url{http://github.com/cjbattagl/deeplearningproj}.
+Our codes are written with Torch7 library and are available at~\url{http://github.com/cjbattagl/deeplearningproj}.

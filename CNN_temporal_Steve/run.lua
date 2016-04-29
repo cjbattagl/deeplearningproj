@@ -10,7 +10,7 @@
 
 -- modified by Min-Hung Chen
 -- contact: cmhungsteve@gatech.edu
--- Last updated: 04/12/2016
+-- Last updated: 04/21/2016
 
 
 require 'pl'
@@ -55,20 +55,19 @@ if opt.type == 'cuda' then
 end
 
 ----------------------------------------------------------------------
-print(sys.COLORS.red ..  '==> load data')
+print(sys.COLORS.cyan ..  '==> load data')
 local data  = require 'data_final'
-print(sys.COLORS.red ..  '==> prepare for training')
+print(sys.COLORS.cyan ..  '==> prepare for training')
 local train = require 'train'
-print(sys.COLORS.red ..  '==> prepare for testing')
+print(sys.COLORS.cyan ..  '==> prepare for testing')
 local test  = require 'test'
 --
 ------------------------------------------------------------------------
 print(sys.COLORS.red .. '==> training!')
 --
 
-for epo=1,300 do 
+for epo=1,100 do 
 --while true do
 	train(data.trainData)
-    test(data.testData)
+    test(data.testData, data.classes, epo)
 end
-

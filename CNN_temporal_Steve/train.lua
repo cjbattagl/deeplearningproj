@@ -34,9 +34,9 @@ require 'image'
 
 ----------------------------------------------------------------------
 -- Model + Loss:
-local t = require 'model_1L'
+local t = require 'model_Res'
 local model = t.model
-local fwmodel = t.model
+--local fwmodel = t.model
 local loss = t.loss
 local model_name = t.model_name
 local nframe = t.nframe
@@ -188,6 +188,8 @@ local function train(trainData)
             optim.sgd(eval_E, w, optimState)
          elseif opt.optMethod == 'adam' then
             optim.adam(eval_E, w, optimState)
+         elseif opt.optMethod == 'rmsprop' then
+            optim.rmsprop(eval_E, w, optimState)
          elseif opt.optMethod == 'asgd' then
             run_passed = run_passed + 1
             mean_dfdx  = asgd(eval_E, w, run_passed, mean_dfdx, optimState)
@@ -209,13 +211,13 @@ local function train(trainData)
       trainLogger:plot()
    end
 
-   -- save/log current net
---   local filename = paths.concat(opt.save, model_name)
---   os.execute('mkdir -p ' .. sys.dirname(filename))
---   print('==> saving model to '..filename)
---   model1 = model:clone()
---   netLighter(model1)
---   torch.save(filename, model1)
+   -- -- save/log current net
+   -- local filename = paths.concat(opt.save, model_name)
+   -- os.execute('mkdir -p ' .. sys.dirname(filename))
+   -- print('==> saving model to '..filename)
+   -- model1 = model:clone()
+   -- netLighter(model1)
+   -- torch.save(filename, model1)
 
    -- next epoch
    confusion:zero()

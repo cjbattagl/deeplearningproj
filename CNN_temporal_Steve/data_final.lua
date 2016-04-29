@@ -19,7 +19,8 @@ require 'torch'   -- torch
 -- 				         Data paths		            --
 ----------------------------------------------
 dirDatabase = '../Dataset/'
-dirFeature = dirDatabase..'NIN/'
+dirFeature = dirDatabase..'Res/'
+--dirFeature = dirDatabase..'NIN/'
 
 ----------------------------------------------
 -- 			      User-defined parameters		    --
@@ -32,9 +33,11 @@ dirFeature = dirDatabase..'NIN/'
 -- Load all the feature matrices & labels
 
 print('==> load training data')
-dataTrain = torch.load(dirFeature..'feat_label_UCF101_train_1.t7')
+dataTrain = torch.load(dirFeature..'data_UCF101_train_1.t7')
+--dataTrain = torch.load(dirFeature..'feat_label_UCF101_train_1.t7')
 print('==> load test data')
-dataTest = torch.load(dirFeature..'feat_label_UCF101_test_1.t7')
+dataTest = torch.load(dirFeature..'data_UCF101_test_1.t7')
+--dataTest = torch.load(dirFeature..'feat_label_UCF101_test_1.t7')
 
 
 -- information for the data
@@ -84,8 +87,10 @@ for i = 1,trsize do
 end
 
 for i= 1,tesize do
-   testData.data[i] = dataTest.featMats[shuffleTest[i]]:clone()
-   testData.labels[i] = dataTest.labels[shuffleTest[i]]
+   -- testData.data[i] = dataTest.featMats[shuffleTest[i]]:clone()
+   -- testData.labels[i] = dataTest.labels[shuffleTest[i]]
+   testData.data[i] = dataTest.featMats[i]:clone()
+   testData.labels[i] = dataTest.labels[i]
 end
 
 print(trainData)

@@ -10,7 +10,7 @@
 
 -- modified by Min-Hung Chen
 -- contact: cmhungsteve@gatech.edu
--- Last updated: 04/03/2016
+-- Last updated: 04/22/2016
 
 
 require 'torch'   -- torch
@@ -18,11 +18,32 @@ require 'xlua'    -- xlua provides useful tools, like progress bars
 require 'optim'   -- an optimization package, for online and batch methods
 require 'image'
 
+
+----------------------------------------------------------------------
+-- Save light network tools:
+function nilling(module)
+   module.gradBias   = nil
+   if module.finput then module.finput = torch.Tensor() end
+   module.gradWeight = nil
+   module.output     = torch.Tensor()
+   if module.fgradInput then module.fgradInput = torch.Tensor() end
+   module.gradInput  = nil
+end
+
+function netLighter(network)
+   nilling(network)
+   if network.modules then
+      for _,a in ipairs(network.modules) do
+         netLighter(a)
+      end
+   end
+end
+
 ----------------------------------------------------------------------
 print(sys.COLORS.red .. '==> defining some tools')
 
 -- model:
-local t = require 'model_1L'
+local t = require 'model_Res'
 local model = t.model
 local loss = t.loss
 local nframe = t.nframe
@@ -45,13 +66,17 @@ end
 ----------------------------------------------------------------------
 print(sys.COLORS.red .. '==> defining test procedure')
 
+accMax = 0 -- record the highest testing accuracy
+epoBest = 0 -- record the epoch # of the best testing accuracy
+
 -- test function
-function test(testData)
+function test(testData, classes, epo)
    -- local vars
    local time = sys.clock()
 
    -- test over test data
    print(sys.COLORS.red .. '==> testing on test set:')
+   predlabeltxt = {}
    for t = 1,testData:size(),opt.batchSize do
       -- disp progress
 	  collectgarbage()
@@ -72,6 +97,24 @@ function test(testData)
 
       -- test sample
       local preds = model:forward(inputs)
+      --print(preds:size())
+      _,indices = torch.sort(preds,2,true)
+      predlabels = indices[{{},1}]
+      --print(predlabels:size())
+
+      
+      for i = 1,opt.batchSize do
+         predlabeltxt[i-1+t] = classes[predlabels[i]]
+      end
+
+      -- idx = 1
+      -- for i = t,t+opt.batchSize-1 do
+      --    -- inputs[{idx,1}] = testData.data[{i,{},{1,nframe}}]
+      --    -- targets[idx] = testData.labels[i]
+      --    predlabeltxt[i] = classes[predlabels[idx]]
+      --    idx = idx + 1
+      -- end
+
 
       -- confusion
       for i = 1,opt.batchSize do
@@ -89,12 +132,19 @@ function test(testData)
 
    -- update log/plot
    testLogger:add{['% mean class accuracy (test set)'] = confusion.totalValid * 100}
+   if confusion.totalValid > accMax then
+      print(sys.COLORS.yellow ..  'Updating the predicted labels!!!')
+      accMax = confusion.totalValid
+      epoBest = epo
+      torch.save('labels.txt',predlabeltxt,'ascii')
+   end
+   print("\n the max accuracy is " .. accMax ..' in the epoch '.. epoBest)
+
    if opt.plot then
       testLogger:style{['% mean class accuracy (test set)'] = '-'}
       testLogger:plot()
    end
    confusion:zero()
-   
 end
 
 -- Export:

@@ -103,10 +103,10 @@ This approach is illustrated in~\reffig{fig:lcrn}.
 % information following an early convolution layer. 
 
 \subsection{Temporal CNN}
-% CNN + CNN (1D convolution) ==> Yan
-In addition to using the LSTM model for the temporal encoder, convolutional architecture(CNN) has also been applied to model sentences using a pre-trained embedding of words ~\cite{cnnSC,cnnMNLS}. We explore this idea and to see how it performs on high level applications such as video classification. First, similar to what we did for LCRN model described above, a pre-trained CNN architecture can be applied as spatial encoder to each frame to extract features. 
-Secondly, we concatenated feature vectors into a feature matrix and apply CNN on this particular temporal feature matrix. The CNN with 1D or 2D convolutional kernels will be applied to the temporal feature matrix separately to verify their influences. For 1D CNN, we take 1D convolution on a sliding window of the concatenated feature vectors along with the temporal direction. For 2D CNN, we apply 2D convolution and 2D max-pooling directly on the a sliding window of the feature matrix from the spatial encoder. This approach is illustrated in~\reffig{fig:tnn}.
-The idea behind this temporal CNN is that, CNN is known for extracting the stationary informations in the image (or feature matrix). Using this feature of CNN and apply directly on feature matrices contain temporal information can be interpreted as: we are exploring some of the distinct feature elements that consistently show up for most of the feature vectors in different time steps, and with different hierarchical layers from CNN to explore the correlation of these elements. All these distinct features and their correlations in each of the video will determine which type of activities for this video. 
+% CNN + CNN (1D convolution) ==> Min-Hung Chen
+In addition to using the LSTM model for the temporal encoder, convolutional architecture(CNN) has also been applied to model sentences using a pre-trained embedding of words ~\cite{cnnSC,cnnMNLS}. We explore this idea and to see how it performs on high level applications such as video classification. First, similar to what we did for LCRN model described above, a pre-trained CNN architecture can be applied as a spatial encoder to each frame to extract features. 
+Secondly, we concatenated feature vectors into a feature matrix and apply CNN on this particular temporal feature matrix. The CNN with 1D or 2D convolutional kernels will be applied to the temporal feature matrix separately to verify their influences. For 1D CNN, we take 1D convolution and 1D max-pooling on a sliding window of the concatenated feature vectors along with the temporal direction. For 2D CNN, we apply 2D convolution and 2D max-pooling directly on the a sliding window of the feature matrix from the spatial encoder. This approach is illustrated in~\reffig{fig:tnn}.
+The idea behind this temporal CNN is that, CNN is known for extracting the stationary information in the image (or feature matrix). Using this characteristic of CNN and applying directly on feature matrices which contain temporal information can be interpreted as: we are exploring some of the distinct feature elements that consistently show up for most of the feature vectors in different time steps, and with different hierarchical layers from CNN to explore the correlation of these elements. All these distinct features and their correlations in each of the video will determine which type of activities for this video. 
 
 \begin{figure}
   \centering
@@ -121,7 +121,7 @@ We target the well-established data set \emph{UCF-101}~\cite{ucf101}, which cont
 
 \subsection{Experimental Methodology}
 %What specific experiments are you planning on conducting? How are they testing the specific problem you want to solve?
-We performed our experiments on personal computers with Intel i7-6700K, 32 GB RAM, and Nvidia GTX 980 GPU. At the begining of the experiments when we moved on to UCF101 dataset, we randomly divided the entire dataset into 5 folds and achieve over $94\%$ accuracy at early stage using NIN model as our feature extractor. 
+We performed our experiments on personal computers with Intel i7-6700K, 32 GB RAM, and Nvidia GTX 980 GPU. At the begining of the experiments when we moved on to UCF-101 dataset, we randomly divided the entire dataset into 5 folds and achieve over $94\%$ accuracy at early stage using NIN model as our feature extractor. 
 To compute our testing error in a way that is comparable with other publications, we used the first given training/testing data splits from the UCF-101 data set~\cite{ucf101}. Within our three models (Baseline CNN, LSTM, TCNN) we used a wide variety of pre-trained ImageNet models as the first CNN layer. These models are labeled in our experimental results. 
 
 % The following is a set of proposed experiments, some of which we have started:
@@ -172,7 +172,7 @@ In~\RefFigure{fig:cnntest} we see the training and testing error for the baselin
   \label{fig:cnntest}
 \end{figure}
 
-We present the training results for the LSTM model in~\RefFigure{fig:lstmtest}. The models vary in which ImageNet model is used for the first layer. Again, we see that ResNet performs the strongest, and we also expect that the deeper ResNet networks perform incrementally better than shallower ones. During the training for RNN with LSTM, we also compare the performance if we use GRU, yet the results are very similar. No significant difference observed during this experiment. 
+We present the training and testing results for the LSTM model in~\RefFigure{fig:lstmtest}. The models vary in which ImageNet model is used for the first layer. Again, we see that ResNet performs the strongest, and we also expect that the deeper ResNet networks perform incrementally better than shallower ones. During the training for RNN with LSTM, we also compare the performance if we use GRU, yet the results are very similar. No significant difference observed during this experiment. 
 
 We also tried various learning rate and settle for $5e-4$ when using adam as optimizer. Using adam as optimizer gives faster and the best convergence. It requires relatively smaller learning rate compared with using SGD. 
 
@@ -184,10 +184,12 @@ The number of the hidden layers are also important to learn the generic represen
   \label{fig:lstmtest}
 \end{figure}
 
-The testing results for our novel TCNN method are presented in~\RefFigure{fig:tnntest}. Using ResNet followed by 2 convolutional layers provided the strongest results, followed by using a single convolutional layer. 
+Before we tested our TCNN model on the first training/testing data split from the UCF-101 dataset, we started from tuning parameters of a 2-layer architecture using NIN features and tested it on the random 5-fold validation scheme to see the influence of each parameter. We found that the parameters of layers should be gradually increased, which means having the convolution kernel size of the second layer greater than the first layer provide better performance. In addition, increasing the difference of the convolution kernel size of two layers results in better accuracy. This means we should keep the size of first layer small and the size of second layer large. We also found the pooling size affects the performance to some extent, so we should have small pooling size since larger pooling size means losing more information. According to the experiments on parameters, our first model is a 2-layer architecture with 3 hidden states (32,64, and 256), along with 2 convolution layers (kernel size 3 and 11) and 2 max-pooling layers (kernel size 4 and 2). The first pooling size is 4 due to the memory issue. (GTX 980 only has 4 GB memory)
 
+After obtaining our primary architecture, we tested it on the first data split of UCF-101 and also tried to modified the architecture. The training and testing results for our novel TCNN method are presented in~\RefFigure{fig:tnntest}. We did the following tests: First, for the 2-layer architecture, besides the 32-64-256 model, we also tried to adopt the idea of 
+LeNet~\cite{lenet} and tried a 20-50-250 model because we only train and test on 48-frame videos, which have similar size as MNIST images. However, from ~\RefFigure{fig:tnntest} we can see that the 32-64-256 model is still better by 1\%. Secondly, in addition to the 2-layer architecture, We also tried one convolution layer because the input size along the temporal direction is not large, and we don't really need deep network. The results show that the 1-layer model is slightly better than the 2-layer model using NIN features (by 2\%). Thirdly, we compared 1D kernels and 2D kernels, and found that 2D kernels don't provide better performance. It's reasonable because there is no correlation between different elements within one feature vector of a frame. Therefore, convolution along spatial direction doesn't help explore information. Finally, we changed the model of spatial CNN encoders to ResNet-101, and this improved the performance a lot. However, in this case, the 2-layer model outperformed the 1-layer model by around 3\%. 
 
-\textcolor{red}{Min-Hung or Hao, please elaborate on the Table 1...} 
+The best results appear in the 2-layer architecture with ResNet-101 features, and the optimizer is SGD with the learning rate $1.5e-4$. The current best accuracy is 75.1\%
 
 \begin{figure}
   \centering
@@ -197,21 +199,24 @@ The testing results for our novel TCNN method are presented in~\RefFigure{fig:tn
 \end{figure}
 
 \begin{table}[h!]
- \caption{Best test results for a given train-test split of UCF101~\cite{ucf101}}
+ \caption{Best test results for a given train-test split of UCF101~\cite{ucf101}}\label{tab:cmp}
 \centering
  \begin{tabular}{||l l||}
  \hline
  \textit{Our Results} & \\ \hline
  CNN (ResNet) & 74.97\% \\
  CNN-LSTM (ResNet) & \textbf{79.39\%} \\
- TCNN (Res2L) & 75.1\% \\ \hline
+ TCNN (Res-2L) & 75.1\% \\ \hline
  \textit{Published Results} & \\ \hline
  LRCN~\cite{byeon2015scene} & 71.12\% \\
- C3D~\cite{stf} & \textbf{85.2\%}\footnote{Uses a specially trained ImageNet} \\
+ C3D~\cite{stf} & \textbf{85.2\%}\footnotemark \\
  SlowFusion~\cite{cnnvid} & 65.4\%\\ [0.5ex]
  \hline
  \end{tabular}
 \end{table}
+\footnotetext{Uses a specially trained ImageNet}
+
+We compared our results with other state-of-the-art methods as shown in Table~\ref{tab:cmp}. It shows that our methods outperform others except the C3D~\cite{stf} method. However, C3D uses 3D kernels for convolution and pooling, and this will cause severe memory issues. In addition, they train their network using 2 huge datasets: I380K (Facebook's private big dataset) and Sports-1M. This means that they have much more training data than we do. Therefore, by using the same training data, our results will get closer to C3D and even outperform it.
 
 \section{Conclusion and Future Work}
 Perhaps the most noticeable result is that the quality of the first convolutional layer is very important. We were able to see excellent improvements in quality just by using ResNet in place of earlier ImageNet models. While we used a standard pretrained ImageNet model for this layer, we might expect improvements by further training this first layer on relevant video classes. 

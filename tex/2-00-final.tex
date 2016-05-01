@@ -66,7 +66,7 @@ Networks (3D-CNNs or CNN as temporal encoder)~\cite{stf,cnnvid,cnnMNLS} and Long
 Short-Term Memory /Recurrent Neural Networks (Regular or Multi-dimensional LSTM)~\cite{ltrcn}. 
 
 \subsection{Baseline}
-Our baseline model is constructed from the pretrained ImageNet CNN. We fine-tuned the pretrained CNN model with extra two fully connected layers, and we apply this fine-tuned CNN model to each of the input frames. A simple averaging process is used on the set of output vectors to produce a predicted class-- essentially implementing a vote. This is shown in~\reffig{fig:cnn}. 
+Our baseline model is constructed from the pretrained ImageNet CNN. We fine-tuned the pretrained CNN model with extra hidden layers with 512 features and output layers to map to the 101 classes. After that, we then applied this fine-tuned CNN model to each of the input frames. A simple averaging process is used on the set of output vectors to produce a predicted class for the entire video -- essentially implementing a vote. This is shown in~\reffig{fig:cnn}. This method treats each single frame individually and doesn't assume any temporal dependency between them. 
 \begin{figure}
   \centering
   \includegraphics[width=1.0\linewidth]{figs/cnn}
@@ -117,7 +117,16 @@ The idea behind this temporal CNN is that, CNN is known for extracting the stati
 
 \section{Experiments}
 \subsection{Data Set}
-We target the well-established data set \emph{UCF-101}~\cite{ucf101}, which contains 13320 videos from 101 action categories. For early training purposes we used a small subset of 10 sports, and then applied to the entire dataset. The ultimate goal, not yet completed, is to apply our framework to Sports-1M~\cite{cnnvid} dataset, which contains around 1 million YouTube videos belonging to 487 categories.
+We target the well-established data set \emph{UCF-101}~\cite{ucf101}, which contains 13320 videos from 101 action categories. For early training purposes we used a small subset of 10 sports, and then applied to the entire dataset. The ultimate goal, not yet completed, is to apply our framework to Sports-1M~\cite{cnnvid} dataset, which contains around 1 million YouTube videos belonging to 487 categories. Some categories example of UCF101 are shown in~\RefFigure{fig:ucf101}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\linewidth]{figs/ucf101.png}
+  \caption{10 Exmaples of UCF101}
+  \label{fig:ucf101}
+\end{figure}
+
+
 
 \subsection{Experimental Methodology}
 %What specific experiments are you planning on conducting? How are they testing the specific problem you want to solve?
@@ -138,7 +147,6 @@ To compute our testing error in a way that is comparable with other publications
 In Figures~\ref{fig:democorrect}--\ref{fig:demo} we show examples of the video output that our model produces. The first label is the result from the RNN model, and the second label from the T-CNN model. The first figure shows a correct classification by both models, the second incorrect classification by both models. In the third figure, the RNN model makes a misprediction while the T-CNN model is correct.  
 
 \textcolor{red}{We should be able to elaborate and discuss more for the example images here. We need more images...} 
-
 
 
 \begin{figure}

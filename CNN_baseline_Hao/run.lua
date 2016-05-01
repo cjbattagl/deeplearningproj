@@ -44,7 +44,6 @@ opt = lapp[[
 torch.setnumthreads(opt.threads)
 torch.manualSeed(1)
 torch.setdefaulttensortype('torch.FloatTensor')
-opt.plot = false
 -- type:
 if opt.type == 'cuda' then
    print(sys.COLORS.red ..  '==> switching to CUDA')
@@ -56,16 +55,14 @@ end
 ----------------------------------------------------------------------
 print(sys.COLORS.red ..  '==> load modules')
 
-data  = require 'data'
-train = require 'train'
-test  = require 'test'
+local data  = require 'data'
+local train = require 'train'
+local test  = require 'test'
 --
 ------------------------------------------------------------------------
 print(sys.COLORS.red .. '==> training!')
 --
 
-print(train)
-print(test)
 --for i=1,50 do 
 while true do
     train(data.trainData)

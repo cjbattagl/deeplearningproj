@@ -66,7 +66,7 @@ Networks (3D-CNNs or CNN as temporal encoder)~\cite{stf,cnnvid,cnnMNLS} and Long
 Short-Term Memory /Recurrent Neural Networks (Regular or Multi-dimensional LSTM)~\cite{ltrcn}. 
 
 \subsection{Baseline}
-Our baseline model is constructed from the pretrained ImageNet CNN. We fine-tuned the pretrained CNN model with extra hidden layers with 512 features and output layers to map to the 101 classes. After that, we then applied this fine-tuned CNN model to each of the input frames. A simple averaging process is used on the set of output vectors to produce a predicted class for the entire video -- essentially implementing a vote. This is shown in~\reffig{fig:cnn}. This method treats each single frame individually and doesn't assume any temporal dependency between them. For the pretrained CNN model we tried both 12-layer NIN and 101-layer Resnet.
+Our baseline model is constructed from the pretrained ImageNet CNN. For the pretrained CNN model we tried both 12-layer NIN and 101-layer Resnet. We fine-tuned the pretrained CNN model (with 2048D feature output) with an extra hidden layer with 512 features and an output layer to map the hidden layer to 101 output. After that, we then applied this fine-tuned CNN model to features of each of the input frames. A simple averaging process is used on the set of output vectors to produce a predicted class for the entire video -- essentially implementing a voting procedure. This is shown in~\reffig{fig:cnn}. This method treats each single frame individually and doesn't assume any temporal dependency between them. 
 \begin{figure}
   \centering
   \includegraphics[width=1.0\linewidth]{figs/cnn}

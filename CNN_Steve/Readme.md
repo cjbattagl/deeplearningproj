@@ -120,6 +120,7 @@ there are 3 main parameters:
 3. Ft:		different modes ==> true: extract features; false: predict labels
 
 notes:
+
 1. model choices: nin_nobn_final.t7, resnet-101.t7, VGG caffe model
 
 -----------------------------------------------------------------------------
@@ -147,6 +148,7 @@ notes:
 command: qlua (-lenv) run_UCF101_2.lua ("-lenv" for printing tables)
 
 notes:
+
 1. You need to downoload the dataset and modify the path in the code
 2. parameters: 
 	* class# = 101
@@ -168,6 +170,7 @@ Load most of the videos in UCF-101 (recommend to use CUDA)
 command: qlua run_UCF101.lua -p cuda
 
 notes:
+
 1. You need to downoload the dataset and modify the path in the code
 2. parameters: 
 	* class# = 101
@@ -188,6 +191,7 @@ Load all the videos in UCF-11
 command: qlua run_UCF11.lua
 
 notes:
+
 1. You need to put all the videos in the folder '../Dataset/.....'
 2. parameters: 
 	* class# = 11
@@ -205,13 +209,16 @@ notes:
 -----------------------------------------------------------------------------
 ### run.lua: 
 Load one video and do the following two things: 
+
 1. generate the feature matrix (need 'gen_feature.lua')
 2. make prediction frame-by-frame (need 'classify_video')
+
 You can choose to turn the function on or off by yourself
 
 command: qlua run.lua (-v your_video)
 
 It will do the following steps:
+
 1. load the video from '../Dataset/.....' (You need to download the UCF-11 first)
 2. load the pre-trained model ("NIN" network) & the ImageNet labels
 3. process the video
@@ -223,10 +230,12 @@ note:
 
 =============================================================================
 Other notes:
+
 1. After running these codes, a new empty folder "out_frames" will be generated. You can ignore it. That's only for debugging.
 2. The images in the folder "images" are only for debugging. They won't be used in the final experiment.
 
 =============================================================================
 #Contact: Min-Hung Chen
 E-mail: cmhungsteve@gatech.edu
+
 Last updated: 05/02/2016

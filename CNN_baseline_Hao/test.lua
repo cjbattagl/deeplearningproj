@@ -10,7 +10,7 @@
 
 -- modified by Hao Yan
 -- contact: yanhao@gatech.edu
--- Last updated: 04/04/2016
+-- Last updated: 05/02/2016
 
 
 require 'torch'   -- torch
@@ -33,7 +33,7 @@ local confusion = optim.ConfusionMatrix(classes)
 
 -- Logger:
 local testLogger = optim.Logger(paths.concat(opt.save,'testnew.log')) 
--- Batch test:
+-- Batch test: 
 local inputs = torch.Tensor(opt.batchSize, nfeature, nframe) -- get size from data
 local targets = torch.Tensor(opt.batchSize)
 local predarr = torch.Tensor(opt.batchSize,101,nframe)
@@ -74,9 +74,8 @@ function test(testData)
 	  for i = 1,nframe do
        	 predarr[{{},{},i}] = model:forward(inputs[{{},{},i}])
 	  end
-	  
+      -- Voting Added 	  
 	  preds = torch.mode(predarr)
---      local preds = model:forward(inputs)
       -- confusion
 --	  print(targets[i],preds[{i,{},1}])
       for i = 1,opt.batchSize do

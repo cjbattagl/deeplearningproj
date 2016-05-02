@@ -29,8 +29,8 @@ ratioTrain = 0.8
 ----------------------------------------------
 -- Load all the feature matrices & labels
 --dataall = torch.load(dirDatabase..'feat_label_UCF11.t7')
-trainData = torch.load(dirDatabase..'data_UCF101_train_1-2.t7')
-testData = torch.load(dirDatabase..'data_UCF101_test_1-2.t7')
+trainData = torch.load(dirDatabase..'data_UCF101_train_1.t7')
+testData = torch.load(dirDatabase..'data_UCF101_test_1.t7')
 
 
 -- information for the data

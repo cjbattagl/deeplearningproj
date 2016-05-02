@@ -3,29 +3,10 @@
 -- Final Project: Video Classification
 
 -- training w/ data augmentation
-
--- TODO:
--- 1. frame selection
--- 2. 
-
+-- original version is from HW2: about training a CNN 
 -- modified by Hao Yan
 -- contact: yanhao@gatech.edu
 -- Last updated: 04/04/2016
-
-----------------------------------------------------------------------
--- This script demonstrates how to define a training procedure,
--- irrespective of the model/loss functions chosen.
---
--- It shows how to:
---   + construct mini-batches on the fly
---   + define a closure to estimate (a noisy) loss
---     function, as well as its derivatives wrt the parameters of the
---     model to be trained
---   + optimize the function, according to several optmization
---     methods: SGD, L-BFGS.
---
--- Clement Farabet
-----------------------------------------------------------------------
 
 require 'torch'   -- torch
 require 'xlua'    -- xlua provides useful tools, like progress bars
@@ -120,6 +101,7 @@ print(sys.COLORS.red ..  '==> defining training procedure')
 local epoch
 local function data_augmentation(inputs)
         -- DATA augmentation (only random 1-D cropping here)
+	-- Modified and Reimplemented
 		local i = torch.random(1,nframe)
 		local outputs = inputs[{{},i}]
 		return outputs
@@ -171,8 +153,6 @@ local function train(trainData)
             -- estimate df/dW
             local dE_dy = loss:backward(y,yt)   
             model:backward(x,dE_dy)
---	   print(yt:size())
---			print(y,yt)
             -- update confusion
             for i = 1,opt.batchSize do
                confusion:add(y[i],yt[i])

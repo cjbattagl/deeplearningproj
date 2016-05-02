@@ -4,11 +4,9 @@
 
 -- Create MLP and loss to optimize.
 
--- TODO:
--- 1. change nstate
 
 -- modified by Hao Yan
--- contact: cmhungsteve@gatech.edu
+-- contact: yanhao@gatech.edu
 -- Last updated: 04/03/2016
 
 

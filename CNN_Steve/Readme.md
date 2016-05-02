@@ -25,13 +25,13 @@ luarocks install ffmpeg
 ### Common Problems
 1. ffmpeg installation problems for Ubuntu 14.04:
 
-sudo add-apt-repository ppa:mc3man/trusty-media
+	sudo add-apt-repository ppa:mc3man/trusty-media
 
-sudo apt-get update
+	sudo apt-get update
 
-sudo apt-get dist-upgrade
+	sudo apt-get dist-upgrade
 
-sudo apt-get install ffmpeg
+	sudo apt-get install ffmpeg
 
 2. run 32-bit unrar in a 64-bit system
 	* For Ubuntu 13.10 and above
@@ -62,11 +62,11 @@ notes: **THIS is the only code to generate our final features !!!**
 
 1. You need to downoload the dataset and modify the path in the code
 2. parameters: 
-	feature dimension = 2048
-	class#, frame#: same as "run_UCF101_final.lua"
+	* feature dimension = 2048
+	* class#, frame#: same as "run_UCF101_final.lua"
 3. There are four kinds of outputs (name, path, featMats & labels) & three numbers
-	name, path:	same as "run_UCF101_final_nameList.lua"
-	numVideo, featMats, labels, numClass, c_finished: same as "run_UCF101_final.lua"
+	* name, path:	same as "run_UCF101_final_nameList.lua"
+	* numVideo, featMats, labels, numClass, c_finished: same as "run_UCF101_final.lua"
 4. running time: around 3.7 times of "run_UCF101_final.lua"
 5. need "transforms.lua" to pre-process images	
 6. need to download the [Res-101](https://www.dropbox.com/s/6sjuhukma6izufi/resnet-101.t7?dl=0) model.
@@ -83,11 +83,11 @@ notes:
 
 1. You need to downoload the dataset and modify the path in the code
 2. parameters: 
-	feature dimension = 4096
-	class#, frame#: same as "run_UCF101_final.lua"
+	* feature dimension = 4096
+	* class#, frame#: same as "run_UCF101_final.lua"
 3. There are four kinds of outputs (name, path, featMats & labels) & three numbers
-	name, path:	same as "run_UCF101_final_nameList.lua"
-	numVideo, featMats, labels, numClass, c_finished: same as "run_UCF101_final.lua"
+	* name, path:	same as "run_UCF101_final_nameList.lua"
+	* numVideo, featMats, labels, numClass, c_finished: same as "run_UCF101_final.lua"
 4. running time: around 5 times of "run_UCF101_final.lua"
 5. need to install "loadcaffe" and "matio".
 6. need to download the [VGG-M prototxt file](https://www.dropbox.com/s/fkz1lqgiw5dvjea/VGG_CNN_M_deploy.prototxt?dl=0), [VGG-M caffe model](https://www.dropbox.com/s/lscyb22hnr6kbwl/VGG_CNN_M.caffemodel?dl=0) and [VGG mean file](https://www.dropbox.com/s/oycqm2h9tcunv1l/VGG_mean.mat?dl=0).
@@ -103,11 +103,11 @@ notes:
 1. You need to downoload the dataset and modify the path in the code
 2. parameters: same as "run_UCF101_final.lua"
 3. There are two kinds of outputs (name & path) & three numbers
-	name: 		video name
-	path:		local video path (under "UCF-101/")
-	numVideo, numClass, c_finished:	same as "run_UCF101_final.lua"
+	* name: 		video name
+	* path:		local video path (under "UCF-101/")
+	* numVideo, numClass, c_finished:	same as "run_UCF101_final.lua"
 
-=============================================================================
+-----------------------------------------------------------------------------
 ### classify_video_debug.lua:
 Load one image --> predict the label or generate the features for that image
 
@@ -135,9 +135,10 @@ notes:
 1. You need to downoload the dataset and modify the path in the code
 2. parameters: same as "run_UCF101_2.lua"
 3. There are two kinds of outputs (featMats & labels) & three numbers
-	numVideo:	depend on training or testing sets (total: 13265)	
-	featMats, labels, numClass, c_finished:	same as "run_UCF101_2.lua"
+	* numVideo:	depend on training or testing sets (total: 13265)	
+	* featMats, labels, numClass, c_finished:	same as "run_UCF101_2.lua"
 4. need to download the [NIN](https://www.dropbox.com/s/brisguefxy9wih5/nin_nobn_final.t7?dl=0) model.
+
 -----------------------------------------------------------------------------
 ### run_UCF101_2.lua:
 1. Load most of the videos in UCF-101 (use CUDA for default)
@@ -148,17 +149,18 @@ command: qlua (-lenv) run_UCF101_2.lua ("-lenv" for printing tables)
 notes:
 1. You need to downoload the dataset and modify the path in the code
 2. parameters: 
-	class# = 101
-	feature dimension = 1024
-	frame# = 50 (I chose from one short video)
+	* class# = 101
+	* feature dimension = 1024
+	* frame# = 50 (I chose from one short video)
 3. There are two kinds of outputs (featMats & labels) & three numbers
-	featMats: 	total video# x feature dimension x frame#
-	labels:		total video# x 1
-	numVideo:	13308
-	numClass:	101
-	c_finished:	103 (no need to care...just a flag^^)
+	* featMats: 	total video# x feature dimension x frame#
+	* labels:		total video# x 1
+	* numVideo:	13308
+	* numClass:	101
+	* c_finished:	103 (no need to care...just a flag^^)
 4. need "classify_video.lua" or "gen_feature.lua" to do classification or feature generation.	
 5. need to download the [NIN](https://www.dropbox.com/s/brisguefxy9wih5/nin_nobn_final.t7?dl=0) model.
+
 -----------------------------------------------------------------------------
 ### run_UCF101.lua:
 Load most of the videos in UCF-101 (recommend to use CUDA)
@@ -168,16 +170,17 @@ command: qlua run_UCF101.lua -p cuda
 notes:
 1. You need to downoload the dataset and modify the path in the code
 2. parameters: 
-	class# = 101
-	video# in each group = 90 (because there are at least 100 videos)
-	total video# = 101*90 = 9090
-	feature dimension = 1024
-	frame# = 57 (I chose from one short video)
+	* class# = 101
+	* video# in each group = 90 (because there are at least 100 videos)
+	* total video# = 101*90 = 9090
+	* feature dimension = 1024
+	* frame# = 57 (I chose from one short video)
 3. There are two kinds of outputs: featMats & labels
-	featMats: 	total video# x feature dimension x frame#
-	labels:		total video# x 1
+	* featMats: 	total video# x feature dimension x frame#
+	* labels:		total video# x 1
 4. need "classify_video.lua" or "gen_feature.lua" to do classification or feature generation.
 5. need to download the [NIN](https://www.dropbox.com/s/brisguefxy9wih5/nin_nobn_final.t7?dl=0) model.
+
 -----------------------------------------------------------------------------
 ### run_UCF11.lua:
 Load all the videos in UCF-11 
@@ -187,17 +190,18 @@ command: qlua run_UCF11.lua
 notes:
 1. You need to put all the videos in the folder '../Dataset/.....'
 2. parameters: 
-	class# = 11
-	group# in each class = 25
-	video# in each group = 4 (because there are at least 4 videos)
-	total video# = 11*25*4 = 1100
-	feature dimension = 1024
-	frame# = 57 (I chose the shortest video)
+	* class# = 11
+	* group# in each class = 25
+	* video# in each group = 4 (because there are at least 4 videos)
+	* total video# = 11*25*4 = 1100
+	* feature dimension = 1024
+	* frame# = 57 (I chose the shortest video)
 3. There are two kinds of outputs: featMats & labels
-	featMats: 	total video# x feature dimension x frame#
-	labels:		total video# x 1
+	* featMats: 	total video# x feature dimension x frame#
+	* labels:		total video# x 1
 4. need "classify_video.lua" or "gen_feature.lua" to do classification or feature generation.
 5. need to download the [NIN](https://www.dropbox.com/s/brisguefxy9wih5/nin_nobn_final.t7?dl=0) model.
+
 -----------------------------------------------------------------------------
 ### run.lua: 
 Load one video and do the following two things: 
